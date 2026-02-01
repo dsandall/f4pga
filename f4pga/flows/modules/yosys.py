@@ -92,7 +92,7 @@ class YosysModule(Module):
                     (
                         " ".join(
                             [
-                                f"read_verilog {args_str} {vfile};"
+                                f"read_verilog -sv {args_str} {vfile};"
                                 for vfile in ctx.takes.sources
                             ]
                         )

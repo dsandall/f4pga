@@ -1,0 +1,10 @@
+{
+  "typeCheckingMode": "off",
+  "exclude": [
+    "build",
+    "dist",
+    "**/__pycache__"
+  ],
+  "reportMissingTypeStubs": false,
+  "reportMissingImports": false
+}
