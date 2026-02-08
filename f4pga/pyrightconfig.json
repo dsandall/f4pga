@@ -1,10 +1,11 @@
 {
   "typeCheckingMode": "off",
+  "pythonPath": "../../../opt/f4pga/xc7/conda_env/bin/python",
+  "extraPaths": [".."],
   "exclude": [
     "build",
     "dist",
     "**/__pycache__"
   ],
-  "reportMissingTypeStubs": false,
-  "reportMissingImports": false
+  "reportMissingTypeStubs": false
 }
