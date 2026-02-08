@@ -21,7 +21,13 @@ from pathlib import Path
 
 from colorama import Fore, Style
 
-from f4pga.flows.common import deep, sfprint, bin_dir_path, share_dir_path, F4PGAException
+from f4pga.flows.common import (
+    deep,
+    sfprint,
+    bin_dir_path,
+    share_dir_path,
+    F4PGAException,
+)
 from f4pga.flows.cache import F4Cache
 from f4pga.flows.flow_config import FlowConfig
 from f4pga.flows.runner import ModRunCtx, module_map, module_exec
@@ -103,7 +109,11 @@ class Flow:
             elif config_paths.get(prod.name):
                 produces[prod.name] = config_paths[prod.name]
 
-        return ModRunCtx(share_dir_path, bin_dir_path, {"takes": takes, "produces": produces, "values": values})
+        return ModRunCtx(
+            share_dir_path,
+            bin_dir_path,
+            {"takes": takes, "produces": produces, "values": values},
+        )
 
     @staticmethod
     def _cache_deps(path: str, f4cache: F4Cache):
@@ -124,7 +134,9 @@ class Flow:
             return True
         return p_dep_differ(paths, consumer, self.f4cache)
 
-    def _resolve_dependencies(self, dep: str, stages_checked: "set[str]", skip_dep_warnings: "set[str]" = None):
+    def _resolve_dependencies(
+        self, dep: str, stages_checked: "set[str]", skip_dep_warnings: "set[str]" = None
+    ):
         if skip_dep_warnings is None:
             skip_dep_warnings = set()
 
@@ -164,7 +176,9 @@ class Flow:
                 # TODO: This won't trigger rebuild if an optional dependency got removed
                 will_differ = False
             elif p_req_exists(take_paths):
-                will_differ = self._dep_will_differ(take.name, take_paths, provider.name)
+                will_differ = self._dep_will_differ(
+                    take.name, take_paths, provider.name
+                )
             else:
                 will_differ = True
 
@@ -182,7 +196,10 @@ class Flow:
         outputs = module_map(
             provider.module,
             self._config_mod_runctx(
-                provider, self.cfg.get_r_env(provider.name).values, self.dep_paths, self.cfg.get_dependency_overrides()
+                provider,
+                self.cfg.get_r_env(provider.name).values,
+                self.dep_paths,
+                self.cfg.get_dependency_overrides(),
             ),
         )
         for output_paths in outputs.values():
@@ -201,8 +218,15 @@ class Flow:
         outs = outputs.keys()
         for o in provider.produces:
             if o.name not in outs:
-                if o.spec == "req" or (o.spec == "demand" and o.name in self.cfg.get_dependency_overrides().keys()):
-                    fatal(-1, f"Module {provider.name} did not produce a mapping " f"for a required output `{o.name}`")
+                if o.spec == "req" or (
+                    o.spec == "demand"
+                    and o.name in self.cfg.get_dependency_overrides().keys()
+                ):
+                    fatal(
+                        -1,
+                        f"Module {provider.name} did not produce a mapping "
+                        f"for a required output `{o.name}`",
+                    )
                 else:
                     # Remove an on-demand/optional output that is not produced
                     # from os_map.
@@ -227,19 +251,30 @@ class Flow:
                 provider = self.os_map.get(dep)
                 if provider and provider.name in self.run_stages:
                     status = Fore.YELLOW + ("[R]" if exists else "[S]") + Fore.RESET
-                    source = f"{Fore.BLUE + self.os_map[dep].name + Fore.RESET} -> {paths}"
+                    source = (
+                        f"{Fore.BLUE + self.os_map[dep].name + Fore.RESET} -> {paths}"
+                    )
                 elif exists:
-                    status = Fore.GREEN + ("[N]" if self.deps_rebuilds[dep] > 0 else "[O]") + Fore.RESET
+                    status = (
+                        Fore.GREEN
+                        + ("[N]" if self.deps_rebuilds[dep] > 0 else "[O]")
+                        + Fore.RESET
+                    )
                     source = paths
             elif self.os_map.get(dep):
                 status = Fore.RED + "[U]" + Fore.RESET
                 source = f"{Fore.BLUE + self.os_map[dep].name + Fore.RESET} -> ???"
 
-            sfprint(verbosity, f"    {Style.BRIGHT + status} " f"{dep + Style.RESET_ALL}:  {source}")
+            sfprint(
+                verbosity,
+                f"    {Style.BRIGHT + status} {dep + Style.RESET_ALL}:  {source}",
+            )
 
     def _build_dep(self, dep):
         provider = self.os_map.get(dep)
-        r_env = self.cfg.r_env if provider is None else self.cfg.get_r_env(provider.name)
+        r_env = (
+            self.cfg.r_env if provider is None else self.cfg.get_r_env(provider.name)
+        )
         paths = r_env.resolve(self.dep_paths.get(dep))
         if not paths:
             sfprint(2, f"Dependency {dep} is unresolved.")
@@ -257,7 +292,9 @@ class Flow:
                     assert p_dep.spec != "req"
                     continue
                 if self.f4cache is not None:
-                    any_dep_differ |= p_update_dep_statuses(self.dep_paths[p_dep.name], provider.name, self.f4cache)
+                    any_dep_differ |= p_update_dep_statuses(
+                        self.dep_paths[p_dep.name], provider.name, self.f4cache
+                    )
 
             # If dependencies remained the same, consider the dep as up-to date
             # For example, when changing a comment in Verilog source code,
@@ -300,7 +337,10 @@ class Flow:
         if self.f4cache:
             self._cache_deps(self.dep_paths[self.target], self.f4cache)
             p_update_dep_statuses(self.dep_paths[self.target], "__target", self.f4cache)
-        sfprint(0, f"Target {Style.BRIGHT + self.target + Style.RESET_ALL} -> {self.dep_paths[self.target]}")
+        sfprint(
+            0,
+            f"Target {Style.BRIGHT + self.target + Style.RESET_ALL} -> {self.dep_paths[self.target]}",
+        )
 
 
 class DependencyNotProducedException(F4PGAException):
@@ -323,7 +363,9 @@ def p_req_exists(r):
     elif type(r) is list:
         return not (False in map(p_req_exists, r))
     else:
-        raise Exception(f"Requirements can be currently checked only for single paths, or path lists (reason: {r})")
+        raise Exception(
+            f"Requirements can be currently checked only for single paths, or path lists (reason: {r})"
+        )
     return True
 
 

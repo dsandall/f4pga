@@ -47,8 +47,17 @@ def main():
     Creates a device library file by getting data from given csv and xml file
     """
     parser = argparse.ArgumentParser(description="Creates a device library file.")
-    parser.add_argument("--lib", "-l", "-L", type=str, default="qlf_k4n8.lib", help="The output device lib file")
-    parser.add_argument("--lib_name", "-n", "-N", type=str, required=True, help="Specify library name")
+    parser.add_argument(
+        "--lib",
+        "-l",
+        "-L",
+        type=str,
+        default="qlf_k4n8.lib",
+        help="The output device lib file",
+    )
+    parser.add_argument(
+        "--lib_name", "-n", "-N", type=str, required=True, help="Specify library name"
+    )
     parser.add_argument(
         "--template_data_path",
         "-t",
@@ -57,14 +66,28 @@ def main():
         required=True,
         help="Specify path from where to pick template data for library creation",
     )
-    parser.add_argument("--cell_name", "-m", "-M", type=str, required=True, help="Specify cell name")
-    parser.add_argument("--csv", "-c", "-C", type=str, required=True, help="Input pin-map csv file")
-    parser.add_argument("--xml", "-x", "-X", type=str, required=True, help="Input interface-mapping xml file")
+    parser.add_argument(
+        "--cell_name", "-m", "-M", type=str, required=True, help="Specify cell name"
+    )
+    parser.add_argument(
+        "--csv", "-c", "-C", type=str, required=True, help="Input pin-map csv file"
+    )
+    parser.add_argument(
+        "--xml",
+        "-x",
+        "-X",
+        type=str,
+        required=True,
+        help="Input interface-mapping xml file",
+    )
 
     args = parser.parse_args()
 
     if not os.path.exists(args.template_data_path):
-        print('Invalid template data path "{}" specified'.format(args.template_data_path), file=sys.stderr)
+        print(
+            'Invalid template data path "{}" specified'.format(args.template_data_path),
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     csv_pin_data = defaultdict(set)
@@ -83,11 +106,27 @@ def main():
                     assoc_clk[port] = row["Associated Clock"].strip()
 
     port_names = parse_xml(args.xml)
-    create_lib(port_names, args.template_data_path, csv_pin_data, args.lib_name, args.lib, args.cell_name, assoc_clk)
+    create_lib(
+        port_names,
+        args.template_data_path,
+        csv_pin_data,
+        args.lib_name,
+        args.lib,
+        args.cell_name,
+        assoc_clk,
+    )
 
 
 # =============================================================================
-def create_lib(port_names, template_data_path, csv_pin_data, lib_name, lib_file_name, cell_name, assoc_clk):
+def create_lib(
+    port_names,
+    template_data_path,
+    csv_pin_data,
+    lib_name,
+    lib_file_name,
+    cell_name,
+    assoc_clk,
+):
     """
     Create lib file
     """
@@ -206,8 +245,12 @@ def create_lib(port_names, template_data_path, csv_pin_data, lib_name, lib_file_
                 for clk in clks:
                     clk_name = clk
                     timing_type = "rising_edge"
-                    curr_str += form_out_timing_group(clk_name, timing_type, common_lib_data)
-                curr_str += form_out_reset_timing_group("RESET_N", "positive_unate", "clear", common_lib_data)
+                    curr_str += form_out_timing_group(
+                        clk_name, timing_type, common_lib_data
+                    )
+                curr_str += form_out_reset_timing_group(
+                    "RESET_N", "positive_unate", "clear", common_lib_data
+                )
             curr_str += "\n{}}} /* end of pin {} */\n".format(add_tab(3), pin.name)
             lib_data += curr_str
         else:
@@ -251,7 +294,9 @@ def form_pin_header(direction, cap, max_tran):
     """
     Form pin header section
     """
-    curr_str = "\n{}direction : {};\n{}capacitance : {};".format(add_tab(4), direction, add_tab(4), cap)
+    curr_str = "\n{}direction : {};\n{}capacitance : {};".format(
+        add_tab(4), direction, add_tab(4), cap
+    )
     curr_str += "\n{}max_transition : {};".format(add_tab(4), max_tran)
     return curr_str
 
@@ -265,7 +310,9 @@ def form_out_reset_timing_group(reset_name, timing_sense, timing_type, common_li
     """
     cell_fall_val = common_lib_data["reset_timing"]["cell_fall_val"]
     fall_tran_val = common_lib_data["reset_timing"]["fall_tran_val"]
-    curr_str = '\n{}timing () {{\n{}related_pin : "{}";'.format(add_tab(4), add_tab(5), reset_name)
+    curr_str = '\n{}timing () {{\n{}related_pin : "{}";'.format(
+        add_tab(4), add_tab(5), reset_name
+    )
     curr_str += "\n{}timing_sense : {};".format(add_tab(5), timing_sense)
     curr_str += "\n{}timing_type : {};".format(add_tab(5), timing_type)
     curr_str += "\n{}cell_fall (scalar) {{\n{}values({});\n{}}}".format(
@@ -289,7 +336,9 @@ def form_out_timing_group(clk_name, timing_type, common_lib_data):
     cell_fall_val = common_lib_data["output_timing"]["rising_edge_cell_fall_val"]
     rise_tran_val = common_lib_data["output_timing"]["rising_edge_rise_tran_val"]
     fall_tran_val = common_lib_data["output_timing"]["rising_edge_fall_tran_val"]
-    curr_str = '\n{}timing () {{\n{}related_pin : "{}";'.format(add_tab(4), add_tab(5), clk_name)
+    curr_str = '\n{}timing () {{\n{}related_pin : "{}";'.format(
+        add_tab(4), add_tab(5), clk_name
+    )
     curr_str += "\n{}timing_type : {};".format(add_tab(5), timing_type)
     curr_str += "\n{}cell_rise (scalar) {{\n{}values({});\n{}}}".format(
         add_tab(5), add_tab(6), cell_rise_val, add_tab(5)
@@ -328,13 +377,23 @@ def form_in_timing_group(clk_name, timing_type, common_lib_data):
     rise_constraint_val = "0.0"
     fall_constraint_val = "0.0"
     if timing_type == "setup_rising":
-        rise_constraint_val = common_lib_data["input_timing"]["setup_rising_rise_constraint_val"]
-        fall_constraint_val = common_lib_data["input_timing"]["setup_rising_fall_constraint_val"]
+        rise_constraint_val = common_lib_data["input_timing"][
+            "setup_rising_rise_constraint_val"
+        ]
+        fall_constraint_val = common_lib_data["input_timing"][
+            "setup_rising_fall_constraint_val"
+        ]
     else:
-        rise_constraint_val = common_lib_data["input_timing"]["hold_rising_rise_constraint_val"]
-        fall_constraint_val = common_lib_data["input_timing"]["hold_rising_fall_constraint_val"]
+        rise_constraint_val = common_lib_data["input_timing"][
+            "hold_rising_rise_constraint_val"
+        ]
+        fall_constraint_val = common_lib_data["input_timing"][
+            "hold_rising_fall_constraint_val"
+        ]
 
-    curr_str = '\n{}timing () {{\n{}related_pin : "{}";'.format(add_tab(4), add_tab(5), clk_name)
+    curr_str = '\n{}timing () {{\n{}related_pin : "{}";'.format(
+        add_tab(4), add_tab(5), clk_name
+    )
     curr_str += "\n{}timing_type : {};".format(add_tab(5), timing_type)
     curr_str += "\n{}rise_constraint (scalar) {{\n{}values({});\n{}}}".format(
         add_tab(5), add_tab(6), rise_constraint_val, add_tab(5)
@@ -415,7 +474,9 @@ def vec_to_scalar(port_name):
         close_brace = port_name.find("]")
         if open_brace == -1 or close_brace == -1:
             print(
-                'Invalid portname "{}" specified. Bus ports should contain [ ] to specify range'.format(port_name),
+                'Invalid portname "{}" specified. Bus ports should contain [ ] to specify range'.format(
+                    port_name
+                ),
                 file=sys.stderr,
             )
             sys.exit(1)

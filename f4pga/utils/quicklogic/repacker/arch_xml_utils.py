@@ -20,6 +20,7 @@
 A number of utility functions useful for traversing pb_type hierarchy as
 defined in VPR architecture XML file.
 """
+
 import re
 
 import lxml.etree as ET
@@ -129,7 +130,8 @@ def yield_pb_children(xml_parent):
 # =============================================================================
 
 INTERCONNECT_PORT_SPEC_RE = re.compile(
-    r"((?P<pbtype>[A-Za-z0-9_]+)(\[(?P<indices>[0-9:]+)\])?\.)" r"(?P<port>[A-Za-z0-9_]+)(\[(?P<bits>[0-9:]+)\])?"
+    r"((?P<pbtype>[A-Za-z0-9_]+)(\[(?P<indices>[0-9:]+)\])?\.)"
+    r"(?P<port>[A-Za-z0-9_]+)(\[(?P<bits>[0-9:]+)\])?"
 )
 
 

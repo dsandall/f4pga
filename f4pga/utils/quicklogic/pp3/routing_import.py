@@ -29,7 +29,10 @@ from f4pga.utils.quicklogic.pp3.data_structs import Loc, ConnectionType
 from f4pga.utils.quicklogic.pp3.utils import fixup_pin_name
 
 from f4pga.utils.quicklogic.pp3.rr_utils import add_node, add_track, add_edge, connect
-from f4pga.utils.quicklogic.pp3.switchbox_model import SwitchboxModel, QmuxSwitchboxModel
+from f4pga.utils.quicklogic.pp3.switchbox_model import (
+    SwitchboxModel,
+    QmuxSwitchboxModel,
+)
 
 # =============================================================================
 
@@ -39,7 +42,10 @@ def is_hop(connection):
     Returns True if a connection represents a HOP wire.
     """
 
-    if connection.src.type == ConnectionType.SWITCHBOX and connection.dst.type == ConnectionType.SWITCHBOX:
+    if (
+        connection.src.type == ConnectionType.SWITCHBOX
+        and connection.dst.type == ConnectionType.SWITCHBOX
+    ):
         return True
 
     return False
@@ -50,10 +56,16 @@ def is_tile(connection):
     Rtturns True for connections going to/from tile.
     """
 
-    if connection.src.type == ConnectionType.SWITCHBOX and connection.dst.type == ConnectionType.TILE:
+    if (
+        connection.src.type == ConnectionType.SWITCHBOX
+        and connection.dst.type == ConnectionType.TILE
+    ):
         return True
 
-    if connection.src.type == ConnectionType.TILE and connection.dst.type == ConnectionType.SWITCHBOX:
+    if (
+        connection.src.type == ConnectionType.TILE
+        and connection.dst.type == ConnectionType.SWITCHBOX
+    ):
         return True
 
     return False
@@ -80,7 +92,10 @@ def is_clock(connection):
     Returns True if the connection spans two clock cells
     """
 
-    if connection.src.type == ConnectionType.CLOCK or connection.dst.type == ConnectionType.CLOCK:
+    if (
+        connection.src.type == ConnectionType.CLOCK
+        or connection.dst.type == ConnectionType.CLOCK
+    ):
         return True
 
     return False
@@ -90,7 +105,10 @@ def is_local(connection):
     """
     Returns true if a connection is local.
     """
-    return (connection.src.loc.x, connection.src.loc.y) == (connection.dst.loc.x, connection.dst.loc.y)
+    return (connection.src.loc.x, connection.src.loc.y) == (
+        connection.dst.loc.x,
+        connection.dst.loc.y,
+    )
 
 
 # =============================================================================
@@ -111,7 +129,11 @@ def get_vpr_switch_for_clock_cell(graph, cell, src, dst):
             # Still not found, use the generic one
             switch_id = graph.get_switch_id("generic")
 
-            print("WARNING: No VPR switch found for '{}.{}' to '{}.{}'".format(cell.name, src, cell.name, dst))
+            print(
+                "WARNING: No VPR switch found for '{}.{}' to '{}.{}'".format(
+                    cell.name, src, cell.name, dst
+                )
+            )
 
     return switch_id
 
@@ -163,7 +185,12 @@ class QmuxModel(object):
         # Check the routes, there has to be only one per const source
         for pin, pin_routes in self.ctrl_routes.items():
             for net in pin_routes.keys():
-                assert len(pin_routes[net]) == 1, (self.cell.name, pin, net, pin_routes[net])
+                assert len(pin_routes[net]) == 1, (
+                    self.cell.name,
+                    pin,
+                    net,
+                    pin_routes[net],
+                )
                 pin_routes[net] = pin_routes[net][0]
 
         # Get segment id
@@ -180,7 +207,11 @@ class QmuxModel(object):
                     try:
                         nodes[dst_pin] = self.connection_loc_to_node[ep]
                     except KeyError:
-                        print("ERROR: Coulnd't find rr node for {}.{}".format(self.cell.name, pin))
+                        print(
+                            "ERROR: Coulnd't find rr node for {}.{}".format(
+                                self.cell.name, pin
+                            )
+                        )
 
         # Get the QMUX to CAND connection
         for connection in self.connections:
@@ -192,7 +223,11 @@ class QmuxModel(object):
                     try:
                         nodes["IZ"] = self.connection_loc_to_node[ep]
                     except KeyError:
-                        print("ERROR: Coulnd't find rr node for {}.{}".format(self.cell.name, pin))
+                        print(
+                            "ERROR: Coulnd't find rr node for {}.{}".format(
+                                self.cell.name, pin
+                            )
+                        )
         # Validate
         for pin in ["IZ", "QCLKIN0", "QCLKIN1", "QCLKIN2"]:
             if pin not in nodes:
@@ -216,7 +251,10 @@ class QmuxModel(object):
                 meta_value = ""
 
             switch_id = get_vpr_switch_for_clock_cell(
-                self.graph, self.cell, "QCLKIN0", "IZ"  # FIXME: Always use the QCLKIN0->IZ timing here
+                self.graph,
+                self.cell,
+                "QCLKIN0",
+                "IZ",  # FIXME: Always use the QCLKIN0->IZ timing here
             )
 
             # Mux switch with appropriate timing and fasm metadata
@@ -258,7 +296,9 @@ class QmuxModel(object):
                 stage_id, switch_id, mux_id, pin_id = muxsel
                 stage = self.switchbox_model.switchbox.stages[stage_id]
 
-                metadata += SwitchboxModel.get_metadata_for_mux(self.phy_loc, stage, switch_id, mux_id, pin_id)
+                metadata += SwitchboxModel.get_metadata_for_mux(
+                    self.phy_loc, stage, switch_id, mux_id, pin_id
+                )
 
         # These features control inverters on IS0 and IS1. The inverters
         # are not used hence they are always disabled.
@@ -391,7 +431,9 @@ def get_node_id_for_tile_pin(graph, loc, tile_type, pin_name):
 
     # Didn't find, try with the capacity prefix
     if nodes is None:
-        rr_pin_name = "TL-{}[{}].{}[0]".format(tile_type, loc.z, fixup_pin_name(pin_name))
+        rr_pin_name = "TL-{}[{}].{}[0]".format(
+            tile_type, loc.z, fixup_pin_name(pin_name)
+        )
 
         try:
             nodes = graph.get_nodes_for_pin((loc.x, loc.y), rr_pin_name)
@@ -447,13 +489,19 @@ def build_tile_connection_map(graph, nodes_by_id, tile_grid, connections):
     def add_to_map(conn_loc):
         tile = tile_grid.get(conn_loc.loc, None)
         if tile is None:
-            print("WARNING: No tile for pin '{} at {}".format(conn_loc.pin, conn_loc.loc))
+            print(
+                "WARNING: No tile for pin '{} at {}".format(conn_loc.pin, conn_loc.loc)
+            )
             return
 
         # Get the VPR rr node for the pin
         node_id = get_node_id_for_tile_pin(graph, conn_loc.loc, tile.type, conn_loc.pin)
         if node_id is None:
-            print("WARNING: No node for pin '{}' at ({},{})".format(conn_loc.pin, conn_loc.loc.x, conn_loc.loc.y))
+            print(
+                "WARNING: No node for pin '{}' at ({},{})".format(
+                    conn_loc.pin, conn_loc.loc.x, conn_loc.loc.y
+                )
+            )
             return
 
         # Convert to Node objects
@@ -628,12 +676,18 @@ def add_tracks_for_const_network(graph, const, tile_grid):
     switch_id = graph.get_delayless_switch_id()
 
     # Find the source tile
-    src_loc = [loc for loc, t in tile_grid.items() if t is not None and t.type == "SYN_{}".format(const)]
+    src_loc = [
+        loc
+        for loc, t in tile_grid.items()
+        if t is not None and t.type == "SYN_{}".format(const)
+    ]
     assert len(src_loc) == 1, const
     src_loc = src_loc[0]
 
     # Go down from the source to the edge of the tilegrid
-    entry_node, col_node, _ = add_track_chain(graph, "Y", src_loc.x, src_loc.y, 1, segment_id, switch_id)
+    entry_node, col_node, _ = add_track_chain(
+        graph, "Y", src_loc.x, src_loc.y, 1, segment_id, switch_id
+    )
 
     # Connect the tile OPIN to the column
     pin_name = "TL-SYN_{const}.{const}0_{const}[0]".format(const=const)
@@ -643,8 +697,12 @@ def add_tracks_for_const_network(graph, const, tile_grid):
     add_edge(graph, opin_node[0][0], entry_node.id, switch_id)
 
     # Got left and right from the source column over the bottommost row
-    row_entry_node1, _, row_node_map1 = add_track_chain(graph, "X", 0, src_loc.x, 1, segment_id, switch_id)
-    row_entry_node2, _, row_node_map2 = add_track_chain(graph, "X", 0, src_loc.x + 1, xmax - 1, segment_id, switch_id)
+    row_entry_node1, _, row_node_map1 = add_track_chain(
+        graph, "X", 0, src_loc.x, 1, segment_id, switch_id
+    )
+    row_entry_node2, _, row_node_map2 = add_track_chain(
+        graph, "X", 0, src_loc.x + 1, xmax - 1, segment_id, switch_id
+    )
 
     # Connect rows to the column
     add_edge(graph, col_node.id, row_entry_node1.id, switch_id)
@@ -657,7 +715,9 @@ def add_tracks_for_const_network(graph, const, tile_grid):
     const_node_map = {}
     for x in range(xmin, xmax):
         # Add the column
-        col_entry_node, _, col_node_map = add_track_chain(graph, "Y", x, ymin + 1, ymax - 1, segment_id, switch_id)
+        col_entry_node, _, col_node_map = add_track_chain(
+            graph, "Y", x, ymin + 1, ymax - 1, segment_id, switch_id
+        )
 
         # Add edge fom the horizontal row
         add_edge(graph, row_node_map[x].id, col_entry_node.id, switch_id)
@@ -685,7 +745,10 @@ def create_track_for_hop_connection(graph, connection):
     assert connection.src.loc != connection.dst.loc, connection
 
     # Determine the connection length
-    length = max(abs(connection.src.loc.x - connection.dst.loc.x), abs(connection.src.loc.y - connection.dst.loc.y))
+    length = max(
+        abs(connection.src.loc.x - connection.dst.loc.x),
+        abs(connection.src.loc.y - connection.dst.loc.y),
+    )
 
     segment_name = "hop{}".format(length)
 
@@ -736,7 +799,9 @@ def populate_hop_connections(graph, switchbox_models, connections):
         connect(graph, hop_node, dst_node)
 
 
-def populate_tile_connections(graph, switchbox_models, connections, connection_loc_to_node):
+def populate_tile_connections(
+    graph, switchbox_models, connections, connection_loc_to_node
+):
     """
     Populates switchbox to tile and tile to switchbox connections
     """
@@ -809,7 +874,11 @@ def populate_tile_connections(graph, switchbox_models, connections, connection_l
                     # To tile
                     if ep == connection.dst:
                         if ep not in connection_loc_to_node:
-                            print("WARNING: No IPIN node for connection {}".format(connection))
+                            print(
+                                "WARNING: No IPIN node for connection {}".format(
+                                    connection
+                                )
+                            )
                             continue
 
                         node = connection_loc_to_node[ep]
@@ -818,7 +887,11 @@ def populate_tile_connections(graph, switchbox_models, connections, connection_l
                     # From tile
                     elif ep == connection.src:
                         if ep not in connection_loc_to_node:
-                            print("WARNING: No OPIN node for connection {}".format(connection))
+                            print(
+                                "WARNING: No OPIN node for connection {}".format(
+                                    connection
+                                )
+                            )
                             continue
 
                         node = connection_loc_to_node[ep]
@@ -873,10 +946,14 @@ def populate_direct_connections(graph, connections, connection_loc_to_node):
         # Couldn't find at least one endpoint node
         if src_tile_node is None or dst_tile_node is None:
             if src_tile_node is None:
-                print("WARNING: No OPIN node for direct connection {}".format(connection))
+                print(
+                    "WARNING: No OPIN node for direct connection {}".format(connection)
+                )
 
             if dst_tile_node is None:
-                print("WARNING: No IPIN node for direct connection {}".format(connection))
+                print(
+                    "WARNING: No IPIN node for direct connection {}".format(connection)
+                )
 
             continue
 
@@ -884,7 +961,9 @@ def populate_direct_connections(graph, connections, connection_loc_to_node):
         add_edge(graph, src_tile_node.id, dst_tile_node.id, switch_id)
 
 
-def populate_const_connections(graph, switchbox_models, tile_types, tile_grid, tile_pin_to_node, const_node_map):
+def populate_const_connections(
+    graph, switchbox_models, tile_types, tile_grid, tile_pin_to_node, const_node_map
+):
     """
     Connects switchbox inputs that represent VCC and GND constants to
     nodes of the global const network.
@@ -977,7 +1056,9 @@ def create_quadrant_clock_tracks(graph, connections, connection_loc_to_node):
         if connection.src.type == ConnectionType.TILE:
             src_node = connection_loc_to_node.get(connection.src, None)
             if src_node is None:
-                print("WARNING: No OPIN node for clock connection {}".format(connection))
+                print(
+                    "WARNING: No OPIN node for clock connection {}".format(connection)
+                )
                 continue
 
         # Source is a switchbox. Skip as control inputs of CAND and QMUX are
@@ -996,7 +1077,9 @@ def create_quadrant_clock_tracks(graph, connections, connection_loc_to_node):
         if connection.dst.type == ConnectionType.TILE:
             dst_node = connection_loc_to_node.get(connection.dst, None)
             if dst_node is None:
-                print("WARNING: No IPIN node for clock connection {}".format(connection))
+                print(
+                    "WARNING: No IPIN node for clock connection {}".format(connection)
+                )
                 continue
 
         # Destination is another global clock cell, do not connect it anywhere
@@ -1149,12 +1232,19 @@ def yield_edges(edges):
 
 def main():
     # Parse arguments
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
     parser.add_argument("--vpr-db", type=str, required=True, help="VPR database file")
-    parser.add_argument("--rr-graph-in", type=str, required=True, help="Input RR graph XML file")
     parser.add_argument(
-        "--rr-graph-out", type=str, default="rr_graph.xml", help="Output RR graph XML file (def. rr_graph.xml)"
+        "--rr-graph-in", type=str, required=True, help="Input RR graph XML file"
+    )
+    parser.add_argument(
+        "--rr-graph-out",
+        type=str,
+        default="rr_graph.xml",
+        help="Output RR graph XML file (def. rr_graph.xml)",
     )
 
     args = parser.parse_args()
@@ -1177,7 +1267,9 @@ def main():
     # Load the routing graph, build SOURCE -> OPIN and IPIN -> SINK edges.
     print("Loading rr graph...")
     xml_graph = rr_xml.Graph(
-        input_file_name=args.rr_graph_in, output_file_name=args.rr_graph_out, progressbar=progressbar_utils.progressbar
+        input_file_name=args.rr_graph_in,
+        output_file_name=args.rr_graph_out,
+        progressbar=progressbar_utils.progressbar,
     )
 
     # Add back the switches that were unused in the arch.xml and got pruned
@@ -1220,7 +1312,9 @@ def main():
     nodes_by_id = {node.id: node for node in xml_graph.graph.nodes}
 
     # Build tile pin names to rr node ids map
-    tile_pin_to_node = build_tile_pin_to_node_map(xml_graph.graph, nodes_by_id, vpr_tile_types, vpr_tile_grid)
+    tile_pin_to_node = build_tile_pin_to_node_map(
+        xml_graph.graph, nodes_by_id, vpr_tile_types, vpr_tile_grid
+    )
 
     # Add const network
     const_node_map = {}
@@ -1234,18 +1328,24 @@ def main():
 
     # Build a map of connections to/from tiles and rr nodes. The map points
     # to an IPIN/OPIN node for a connection loc that mentions it.
-    node_map = build_tile_connection_map(xml_graph.graph, nodes_by_id, vpr_tile_grid, connections)
+    node_map = build_tile_connection_map(
+        xml_graph.graph, nodes_by_id, vpr_tile_grid, connections
+    )
     connection_loc_to_node.update(node_map)
 
     # Build the global clock network
     print("Building the global clock network...")
 
     # GMUX to QMUX and QMUX to CAND tracks
-    node_map = create_quadrant_clock_tracks(xml_graph.graph, connections, connection_loc_to_node)
+    node_map = create_quadrant_clock_tracks(
+        xml_graph.graph, connections, connection_loc_to_node
+    )
     connection_loc_to_node.update(node_map)
 
     # Clock column tracks
-    cand_node_map = create_column_clock_tracks(xml_graph.graph, vpr_clock_cells, vpr_quadrants)
+    cand_node_map = create_column_clock_tracks(
+        xml_graph.graph, vpr_clock_cells, vpr_quadrants
+    )
 
     # Add switchbox models.
     print("Building switchbox models...")
@@ -1320,11 +1420,18 @@ def main():
     # Populate connections to the switchbox models
     print("Populating connections...")
     populate_hop_connections(xml_graph.graph, switchbox_models, connections)
-    populate_tile_connections(xml_graph.graph, switchbox_models, connections, connection_loc_to_node)
+    populate_tile_connections(
+        xml_graph.graph, switchbox_models, connections, connection_loc_to_node
+    )
     populate_direct_connections(xml_graph.graph, connections, connection_loc_to_node)
     populate_cand_connections(xml_graph.graph, switchbox_models, cand_node_map)
     populate_const_connections(
-        xml_graph.graph, switchbox_models, vpr_tile_types, vpr_tile_grid, tile_pin_to_node, const_node_map
+        xml_graph.graph,
+        switchbox_models,
+        vpr_tile_types,
+        vpr_tile_grid,
+        tile_pin_to_node,
+        const_node_map,
     )
 
     # Create channels from tracks
@@ -1363,12 +1470,18 @@ def main():
             loc = (src.loc.x_low, src.loc.y_low)
             connected_locs.add(loc)
 
-    non_empty_locs = set((loc.x, loc.y) for loc in xml_graph.graph.grid if loc.block_type_id > 0)
+    non_empty_locs = set(
+        (loc.x, loc.y) for loc in xml_graph.graph.grid if loc.block_type_id > 0
+    )
 
     unconnected_locs = non_empty_locs - connected_locs
     for loc in unconnected_locs:
         block_type = xml_graph.graph.block_type_at_loc(loc)
-        print(" ERROR: Tile '{}' at ({}, {}) is not connected!".format(block_type, loc[0], loc[1]))
+        print(
+            " ERROR: Tile '{}' at ({}, {}) is not connected!".format(
+                block_type, loc[0], loc[1]
+            )
+        )
 
     # Write the routing graph
     nodes_obj = xml_graph.graph.nodes

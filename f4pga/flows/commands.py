@@ -84,9 +84,13 @@ def display_dep_info(stages: "Iterable[Stage]"):
                 specstr = f"{Fore.YELLOW}not guaranteed{Fore.RESET}"
             elif out.spec == "demand":
                 specstr = f"{Fore.RED}on-demand{Fore.RESET}"
-            pgen = f"{Style.DIM}stage: `{stage.name}`, " f"spec: {specstr}{Style.RESET_ALL}"
+            pgen = f"{Style.DIM}stage: `{stage.name}`, spec: {specstr}{Style.RESET_ALL}"
             pdesc = stage.meta[out.name].replace("\n", nl_indentstr)
-            sfprint(0, f"    {Style.BRIGHT + out.name + Style.RESET_ALL}:" f"{indent}{pdesc}{nl_indentstr}{pgen}")
+            sfprint(
+                0,
+                f"    {Style.BRIGHT + out.name + Style.RESET_ALL}:"
+                f"{indent}{pdesc}{nl_indentstr}{pgen}",
+            )
 
 
 def display_stage_info(stage: Stage):
@@ -114,7 +118,7 @@ def f4pga_fail():
 
 
 def f4pga_done():
-    sfprint(1, f"f4pga: {f4pga_done_str}" f"{Style.RESET_ALL + Fore.RESET}")
+    sfprint(1, f"f4pga: {f4pga_done_str}{Style.RESET_ALL + Fore.RESET}")
     sys_exit(0 if "FAILED" not in f4pga_done_str else 1)
 
 
@@ -186,10 +190,14 @@ def make_flow_config(project_flow_cfg: ProjectFlowConfig, part_name: str) -> Flo
 
     platform = get_platform_name_for_part(part_name)
     if platform is None:
-        raise F4PGAException(message="You have to specify a part name or configure a default part.")
+        raise F4PGAException(
+            message="You have to specify a part name or configure a default part."
+        )
 
     if part_name not in project_flow_cfg.parts():
-        raise F4PGAException(message="Project flow configuration does not support requested part.")
+        raise F4PGAException(
+            message="Project flow configuration does not support requested part."
+        )
 
     r_env = setup_resolution_env()
     r_env.add_values({"part_name": part_name.lower()})
@@ -197,9 +205,13 @@ def make_flow_config(project_flow_cfg: ProjectFlowConfig, part_name: str) -> Flo
     with (ROOT / "platforms.yml").open("r") as rfptr:
         platforms = yaml_load(rfptr, yaml_loader)
     if platform not in platforms:
-        raise F4PGAException(message=f"Flow definition for platform <{platform}> cannot be found!")
+        raise F4PGAException(
+            message=f"Flow definition for platform <{platform}> cannot be found!"
+        )
 
-    flow_cfg = FlowConfig(project_flow_cfg, FlowDefinition(platforms[platform], r_env), part_name)
+    flow_cfg = FlowConfig(
+        project_flow_cfg, FlowDefinition(platforms[platform], r_env), part_name
+    )
 
     if len(flow_cfg.stages) == 0:
         raise F4PGAException(message="Platform flow does not define any stage")
@@ -222,7 +234,11 @@ def cmd_build(args: Namespace):
         part_name = project_flow_cfg.get_default_part()
 
     if (project_flow_cfg is None) and part_name is None:
-        fatal(-1, "No configuration was provided. Use `--flow`, and/or " "`--part` to configure flow.")
+        fatal(
+            -1,
+            "No configuration was provided. Use `--flow`, and/or "
+            "`--part` to configure flow.",
+        )
 
     override_prj_flow_cfg_by_cli(project_flow_cfg, get_cli_flow_config(args, part_name))
 
@@ -240,9 +256,17 @@ def cmd_build(args: Namespace):
     if target is None:
         target = project_flow_cfg.get_default_target(part_name)
         if target is None:
-            fatal(-1, "Please specify desired target using `--target` option " "or configure a default target.")
+            fatal(
+                -1,
+                "Please specify desired target using `--target` option "
+                "or configure a default target.",
+            )
 
-    flow = Flow(target=target, cfg=flow_cfg, f4cache=F4Cache(F4CACHEPATH) if not args.nocache else None)
+    flow = Flow(
+        target=target,
+        cfg=flow_cfg,
+        f4cache=F4Cache(F4CACHEPATH) if not args.nocache else None,
+    )
 
     dep_print_verbosity = 0 if args.pretend else 2
     sfprint(dep_print_verbosity, "\nProject status:")
@@ -275,7 +299,9 @@ def cmd_show_dependencies(args: Namespace):
 
     platform_overrides: "set | None" = None
     if args.platform is not None:
-        platform_overrides = set(flow_cfg.get_dependency_platform_overrides(args.part).keys())
+        platform_overrides = set(
+            flow_cfg.get_dependency_platform_overrides(args.part).keys()
+        )
 
     display_list = []
 

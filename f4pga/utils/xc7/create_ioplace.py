@@ -22,7 +22,6 @@
 Convert a PCF file into a VPR io.place file.
 """
 
-
 from argparse import ArgumentParser, FileType
 from pathlib import Path
 from csv import DictReader as csv_DictReader
@@ -33,7 +32,16 @@ from f4pga.utils.vpr_io_place import IoPlace
 from f4pga.utils.pcf import parse_simple_pcf
 
 
-def p_main(blif, map, net, pcf=None, output=stdout, iostandard_defs_file=None, iostandard="LVCMOS33", drive=12):
+def p_main(
+    blif,
+    map,
+    net,
+    pcf=None,
+    output=stdout,
+    iostandard_defs_file=None,
+    iostandard="LVCMOS33",
+    drive=12,
+):
     io_place = IoPlace()
     io_place.read_io_list_from_eblif(blif)
     io_place.load_block_names_from_net_file(net)
@@ -103,12 +111,20 @@ def p_main(blif, map, net, pcf=None, output=stdout, iostandard_defs_file=None, i
 
         loc, is_output, iob, real_io_assoc = pad_map[pad]
 
-        io_place.constrain_net(net_name=net, loc=loc, comment="set_property LOC {} [get_ports {{{}}}]".format(pad, net))
+        io_place.constrain_net(
+            net_name=net,
+            loc=loc,
+            comment="set_property LOC {} [get_ports {{{}}}]".format(pad, net),
+        )
         if real_io_assoc == "True":
             iostandard_defs[iob] = (
                 iostandard_constraints[pad]
                 if pad in iostandard_constraints
-                else ({"DRIVE": drive, "IOSTANDARD": iostandard} if is_output else {"IOSTANDARD": iostandard})
+                else (
+                    {"DRIVE": drive, "IOSTANDARD": iostandard}
+                    if is_output
+                    else {"IOSTANDARD": iostandard}
+                )
             )
 
     io_place.output_io_place(output)
@@ -143,11 +159,26 @@ def main(
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Convert a PCF file into a VPR io.place file.")
-    parser.add_argument("--pcf", "-p", "-P", type=FileType("r"), required=False, help="PCF input file")
-    parser.add_argument("--blif", "-b", type=FileType("r"), required=True, help="BLIF / eBLIF file")
-    parser.add_argument("--map", "-m", "-M", type=FileType("r"), required=True, help="Pin map CSV file")
-    parser.add_argument("--output", "-o", "-O", type=FileType("w"), default=stdout, help="The output io.place file")
-    parser.add_argument("--iostandard_defs", help="(optional) Output IOSTANDARD def file")
+    parser.add_argument(
+        "--pcf", "-p", "-P", type=FileType("r"), required=False, help="PCF input file"
+    )
+    parser.add_argument(
+        "--blif", "-b", type=FileType("r"), required=True, help="BLIF / eBLIF file"
+    )
+    parser.add_argument(
+        "--map", "-m", "-M", type=FileType("r"), required=True, help="Pin map CSV file"
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        "-O",
+        type=FileType("w"),
+        default=stdout,
+        help="The output io.place file",
+    )
+    parser.add_argument(
+        "--iostandard_defs", help="(optional) Output IOSTANDARD def file"
+    )
     parser.add_argument(
         "--iostandard",
         default="LVCMOS33",
@@ -159,7 +190,9 @@ if __name__ == "__main__":
         default=12,
         help="Default drive to use for pins",
     )
-    parser.add_argument("--net", "-n", type=FileType("r"), required=True, help="top.net file")
+    parser.add_argument(
+        "--net", "-n", type=FileType("r"), required=True, help="top.net file"
+    )
 
     args = parser.parse_args()
 

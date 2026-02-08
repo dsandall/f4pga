@@ -67,7 +67,13 @@ def add_edge(graph, src_node_id, dst_node_id, switch_id, meta_name=None, meta_va
     """
 
     # Sanity check
-    assert src_node_id != dst_node_id, (src_node_id, dst_node_id, switch_id, meta_name, meta_value)
+    assert src_node_id != dst_node_id, (
+        src_node_id,
+        dst_node_id,
+        switch_id,
+        meta_name,
+        meta_value,
+    )
 
     # Connect src to dst
     graph.add_edge(src_node_id, dst_node_id, switch_id, meta_name, meta_value)
@@ -106,7 +112,15 @@ def node_joint_location(node_a, node_b):
     assert False, (node_a, node_b)
 
 
-def connect(graph, src_node, dst_node, switch_id=None, segment_id=None, meta_name=None, meta_value=""):
+def connect(
+    graph,
+    src_node,
+    dst_node,
+    switch_id=None,
+    segment_id=None,
+    meta_name=None,
+    meta_value="",
+):
     """
     Connect two VPR nodes in a way that certain rules are obeyed.
 
@@ -149,10 +163,18 @@ def connect(graph, src_node, dst_node, switch_id=None, segment_id=None, meta_nam
             segment_id = src_node.segment.segment_id
 
     # CHANX to CHANY or vice-versa
-    chanx_to_chany = src_node.type == rr.NodeType.CHANX and dst_node.type == rr.NodeType.CHANY
-    chany_to_chanx = src_node.type == rr.NodeType.CHANY and dst_node.type == rr.NodeType.CHANX
-    chany_to_chany = src_node.type == rr.NodeType.CHANY and dst_node.type == rr.NodeType.CHANY
-    chanx_to_chanx = src_node.type == rr.NodeType.CHANX and dst_node.type == rr.NodeType.CHANX
+    chanx_to_chany = (
+        src_node.type == rr.NodeType.CHANX and dst_node.type == rr.NodeType.CHANY
+    )
+    chany_to_chanx = (
+        src_node.type == rr.NodeType.CHANY and dst_node.type == rr.NodeType.CHANX
+    )
+    chany_to_chany = (
+        src_node.type == rr.NodeType.CHANY and dst_node.type == rr.NodeType.CHANY
+    )
+    chanx_to_chanx = (
+        src_node.type == rr.NodeType.CHANX and dst_node.type == rr.NodeType.CHANX
+    )
     if chany_to_chanx or chanx_to_chany:
         # Check loc
         node_joint_location(src_node, dst_node)
@@ -174,7 +196,10 @@ def connect(graph, src_node, dst_node, switch_id=None, segment_id=None, meta_nam
         add_edge(graph, pad_node.id, dst_node.id, switch_id, meta_name, meta_value)
 
     # OPIN to CHANX/CHANY
-    elif src_node.type == rr.NodeType.OPIN and dst_node.type in [rr.NodeType.CHANX, rr.NodeType.CHANY]:
+    elif src_node.type == rr.NodeType.OPIN and dst_node.type in [
+        rr.NodeType.CHANX,
+        rr.NodeType.CHANY,
+    ]:
         # All OPINs go right (towards +X)
         assert src_node.loc.side == tracks.Direction.RIGHT, src_node
 
@@ -200,7 +225,10 @@ def connect(graph, src_node, dst_node, switch_id=None, segment_id=None, meta_nam
             assert False, dst_node
 
     # CHANX/CHANY to IPIN
-    elif dst_node.type == rr.NodeType.IPIN and src_node.type in [rr.NodeType.CHANX, rr.NodeType.CHANY]:
+    elif dst_node.type == rr.NodeType.IPIN and src_node.type in [
+        rr.NodeType.CHANX,
+        rr.NodeType.CHANY,
+    ]:
         # All IPINs go top (toward +Y)
         assert dst_node.loc.side == tracks.Direction.TOP, dst_node
 

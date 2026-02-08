@@ -102,7 +102,12 @@ class ModuleFailException(Exception):
 
 
 def module_io(module: Module):
-    return {"name": module.name, "takes": module.takes, "produces": module.produces, "meta": get_mod_metadata(module)}
+    return {
+        "name": module.name,
+        "takes": module.takes,
+        "produces": module.produces,
+        "meta": get_mod_metadata(module),
+    }
 
 
 _deep_resolve = deep(lambda p: str(Path(p).resolve()), allow_none=True)
@@ -110,7 +115,9 @@ _deep_resolve = deep(lambda p: str(Path(p).resolve()), allow_none=True)
 
 def module_map(module: Module, ctx: ModRunCtx):
     try:
-        mod_ctx = ModuleContext(module, ctx.config, ctx.make_r_env(), ctx.share, ctx.bin)
+        mod_ctx = ModuleContext(
+            module, ctx.config, ctx.make_r_env(), ctx.share, ctx.bin
+        )
     except Exception as e:
         raise ModuleFailException(module.name, "map", e)
 
@@ -119,7 +126,9 @@ def module_map(module: Module, ctx: ModRunCtx):
 
 def module_exec(module: Module, ctx: ModRunCtx):
     try:
-        mod_ctx = ModuleContext(module, ctx.config, ctx.make_r_env(), ctx.share, ctx.bin)
+        mod_ctx = ModuleContext(
+            module, ctx.config, ctx.make_r_env(), ctx.share, ctx.bin
+        )
     except Exception as e:
         raise ModuleFailException(module.name, "exec", e)
 
@@ -127,9 +136,15 @@ def module_exec(module: Module, ctx: ModRunCtx):
     current_phase = 1
     try:
         for phase_msg in module.execute(mod_ctx):
-            sfprint(1, f"    {Style.BRIGHT}[{current_phase}/{module.no_of_phases}] {Style.RESET_ALL}: {phase_msg}")
+            sfprint(
+                1,
+                f"    {Style.BRIGHT}[{current_phase}/{module.no_of_phases}] {Style.RESET_ALL}: {phase_msg}",
+            )
             current_phase += 1
     except Exception as e:
         raise ModuleFailException(module.name, "exec", e)
 
-    sfprint(1, f"Module `{Style.BRIGHT + module.name + Style.RESET_ALL}` has finished its work!")
+    sfprint(
+        1,
+        f"Module `{Style.BRIGHT + module.name + Style.RESET_ALL}` has finished its work!",
+    )

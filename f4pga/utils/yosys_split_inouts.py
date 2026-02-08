@@ -67,7 +67,6 @@ the resulting design would be:
 
 """
 
-
 from pathlib import Path
 from os.path import splitext
 import simplejson as json
@@ -254,19 +253,27 @@ def main(input: str, output: str = None):
             # Remove connections to the output net from input port and vice
             # versa.
             for dir in ["input", "output"]:
-                if port_directions[port_name] == dir and port_name.endswith("$" + dir[:3]):
+                if port_directions[port_name] == dir and port_name.endswith(
+                    "$" + dir[:3]
+                ):
                     for i, n in enumerate(port_nets):
                         if n in net_map:
                             mapped_n = net_map[n][dir[0]]
                             port_nets[i] = mapped_n
-                            print("Mapping connection {}.{}[{}] from {} to {}".format(name, port_name, i, n, mapped_n))
+                            print(
+                                "Mapping connection {}.{}[{}] from {} to {}".format(
+                                    name, port_name, i, n, mapped_n
+                                )
+                            )
 
     with Path(output).open("w") as fp:
         json.dump(design, fp, sort_keys=True, indent=2)
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description=__doc__, formatter_class=RawDescriptionHelpFormatter)
+    parser = ArgumentParser(
+        description=__doc__, formatter_class=RawDescriptionHelpFormatter
+    )
     parser.add_argument("-i", required=True, type=str, help="Input JSON")
     parser.add_argument("-o", default=None, type=str, help="Output JSON")
     args = parser.parse_args()

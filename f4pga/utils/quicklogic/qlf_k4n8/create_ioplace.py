@@ -19,6 +19,7 @@
 """
 Convert a PCF file into a VPR io.place file.
 """
+
 import argparse
 import csv
 import sys
@@ -71,14 +72,25 @@ def gen_io_def(args):
                 if port in port_map:
                     curr_map = port_map[port]
                     if gpio_type is None or gpio_type == "":
-                        pad_map[pin] = (int(curr_map.x), int(curr_map.y), int(curr_map.z))
+                        pad_map[pin] = (
+                            int(curr_map.x),
+                            int(curr_map.y),
+                            int(curr_map.z),
+                        )
                     else:
                         gpio_pin = pin + ":" + gpio_type.strip()
-                        pad_map[gpio_pin] = (int(curr_map.x), int(curr_map.y), int(curr_map.z))
+                        pad_map[gpio_pin] = (
+                            int(curr_map.x),
+                            int(curr_map.y),
+                            int(curr_map.z),
+                        )
                 else:
                     print(
                         'Port name "{}" specified in csv file "{}" is invalid. {} "{}"'.format(
-                            line["port_name"], args.csv_file, "Specify from port names in xml file", args.pinmap_xml
+                            line["port_name"],
+                            args.csv_file,
+                            "Specify from port names in xml file",
+                            args.pinmap_xml,
                         ),
                         file=sys.stderr,
                     )
@@ -125,7 +137,9 @@ def gen_io_def(args):
 
             # Constraint the net (block)
             locs = pad_map[pad_name]
-            io_place.constrain_net(net_name=pcf_constraint.net, loc=locs, comment=pcf_constraint.line_str)
+            io_place.constrain_net(
+                net_name=pcf_constraint.net, loc=locs, comment=pcf_constraint.line_str
+            )
 
     if io_place.constraints:
         io_place.output_io_place(args.output)
@@ -138,16 +152,42 @@ def main():
     """
     Convert a PCF file into a VPR io.place file
     """
-    parser = argparse.ArgumentParser(description="Convert a PCF file into a VPR io.place file.")
-    parser.add_argument("--pcf", "-p", "-P", type=argparse.FileType("r"), required=True, help="PCF input file")
-    parser.add_argument("--blif", "-b", type=argparse.FileType("r"), required=True, help="BLIF / eBLIF file")
-    parser.add_argument(
-        "--output", "-o", "-O", type=argparse.FileType("w"), default=sys.stdout, help="The output io.place file"
+    parser = argparse.ArgumentParser(
+        description="Convert a PCF file into a VPR io.place file."
     )
-    parser.add_argument("--net", "-n", type=argparse.FileType("r"), required=True, help="top.net file")
+    parser.add_argument(
+        "--pcf",
+        "-p",
+        "-P",
+        type=argparse.FileType("r"),
+        required=True,
+        help="PCF input file",
+    )
+    parser.add_argument(
+        "--blif",
+        "-b",
+        type=argparse.FileType("r"),
+        required=True,
+        help="BLIF / eBLIF file",
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        "-O",
+        type=argparse.FileType("w"),
+        default=sys.stdout,
+        help="The output io.place file",
+    )
+    parser.add_argument(
+        "--net", "-n", type=argparse.FileType("r"), required=True, help="top.net file"
+    )
 
-    parser.add_argument("--pinmap_xml", type=str, required=True, help="Input pin-mapping xml file")
-    parser.add_argument("--csv_file", type=str, required=True, help="Input user-defined pinmap CSV file")
+    parser.add_argument(
+        "--pinmap_xml", type=str, required=True, help="Input pin-mapping xml file"
+    )
+    parser.add_argument(
+        "--csv_file", type=str, required=True, help="Input user-defined pinmap CSV file"
+    )
 
     args = parser.parse_args()
 

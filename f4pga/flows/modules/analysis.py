@@ -26,7 +26,9 @@ from f4pga.flows.module import Module, ModuleContext
 class analysisModule(Module):
     def map_io(self, ctx: ModuleContext):
         return {
-            "merged_post_implementation_v": p_analysis_merged_post_implementation_file(ctx),
+            "merged_post_implementation_v": p_analysis_merged_post_implementation_file(
+                ctx
+            ),
             "post_implementation_v": p_analysis_post_implementation_file(ctx),
         }
 
@@ -51,10 +53,14 @@ class analysisModule(Module):
         )
 
         if ctx.is_output_explicit("merged_post_implementation_v"):
-            Path(p_analysis_merged_post_implementation_file(ctx)).rename(ctx.outputs.merged_post_implementation_v)
+            Path(p_analysis_merged_post_implementation_file(ctx)).rename(
+                ctx.outputs.merged_post_implementation_v
+            )
 
         if ctx.is_output_explicit("post_implementation_v"):
-            Path(p_analysis_post_implementation_file(ctx)).rename(ctx.outputs.post_implementation_v)
+            Path(p_analysis_post_implementation_file(ctx)).rename(
+                ctx.outputs.post_implementation_v
+            )
 
         yield "Saving log..."
         save_vpr_log("analysis.log", build_dir=build_dir)
@@ -63,7 +69,11 @@ class analysisModule(Module):
         self.name = "analysis"
         self.no_of_phases = 2
         self.takes = ["eblif", "route", "sdc?"]
-        self.produces = ["merged_post_implementation_v", "post_implementation_v", "analysis_log"]
+        self.produces = [
+            "merged_post_implementation_v",
+            "post_implementation_v",
+            "analysis_log",
+        ]
         self.values = ["device", "vpr_options?"] + vpr_specific_values
 
 

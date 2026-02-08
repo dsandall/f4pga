@@ -22,6 +22,7 @@ Utilities for handling VTR packed netlist (.net) data
 VPR packed netlist format specification:
     https://docs.verilogtorouting.org/en/latest/vpr/file_formats/#packed-netlist-format-net
 """
+
 import re
 import lxml.etree as ET
 
@@ -38,7 +39,9 @@ class Connection:
     """
 
     # A regex for parsing connection specification
-    REGEX = re.compile(r"(?P<driver>\S+)\.(?P<port>\S+)\[(?P<pin>[0-9]+)\]->" r"(?P<interconnect>\S+)")
+    REGEX = re.compile(
+        r"(?P<driver>\S+)\.(?P<port>\S+)\[(?P<pin>[0-9]+)\]->" r"(?P<interconnect>\S+)"
+    )
 
     def __init__(self, driver, port, pin, interconnect):
         """
@@ -87,7 +90,9 @@ class Connection:
         """
         Builds a specification string that can be stored in packed netlist
         """
-        return "{}.{}[{}]->{}".format(self.driver, self.port, self.pin, self.interconnect)
+        return "{}.{}[{}]->{}".format(
+            self.driver, self.port, self.pin, self.interconnect
+        )
 
     def __str__(self):
         return self.to_string()
@@ -219,7 +224,11 @@ class Block:
         assert elem.tag == "block", elem.tag
 
         # Create the block with basic attributes
-        block = Block(name=elem.attrib["name"], instance=elem.attrib["instance"], mode=elem.get("mode", "default"))
+        block = Block(
+            name=elem.attrib["name"],
+            instance=elem.attrib["instance"],
+            mode=elem.get("mode", "default"),
+        )
 
         # Parse ports
         rotation_maps = {}
@@ -261,12 +270,16 @@ class Block:
             block.blocks[sub_block.instance] = sub_block
 
         # Parse attributes and parameters
-        for tag, data in zip(["attributes", "parameters"], [block.attributes, block.parameters]):
+        for tag, data in zip(
+            ["attributes", "parameters"], [block.attributes, block.parameters]
+        ):
             # Find the list
             xml_list = elem.find(tag)
             if xml_list is not None:
                 # Only a leaf block can have attributes / parameters
-                assert block.is_leaf, "Non-leaf block '{}' with {}".format(block.instance, tag)
+                assert block.is_leaf, "Non-leaf block '{}' with {}".format(
+                    block.instance, tag
+                )
 
                 # Parse
                 sub_tag = tag[:-1]
@@ -297,7 +310,9 @@ class Block:
 
         # Attributes / parameters
         if self.is_leaf:
-            for tag, data in zip(["attributes", "parameters"], [self.attributes, self.parameters]):
+            for tag, data in zip(
+                ["attributes", "parameters"], [self.attributes, self.parameters]
+            ):
                 xml_list = ET.Element(tag)
 
                 sub_tag = tag[:-1]
@@ -329,7 +344,9 @@ class Block:
                             rotation.append(str(port.rotation_map.get(i, "open")))
 
                         # Make an element
-                        xml_rotation_map = ET.Element("port_rotation_map", {"name": port.name})
+                        xml_rotation_map = ET.Element(
+                            "port_rotation_map", {"name": port.name}
+                        )
                         xml_rotation_map.text = " ".join(rotation)
                         xml_ports.append(xml_rotation_map)
 

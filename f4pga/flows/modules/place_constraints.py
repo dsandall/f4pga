@@ -39,7 +39,12 @@ class PlaceConstraintsModule(Module):
                             "--net",
                             ctx.takes.net,
                             "--arch",
-                            str(Path(ctx.share) / "arch" / ctx.values.device / "arch.timing.xml"),
+                            str(
+                                Path(ctx.share)
+                                / "arch"
+                                / ctx.values.device
+                                / "arch.timing.xml"
+                            ),
                             "--blif",
                             ctx.takes.eblif,
                             "--input",
@@ -49,7 +54,11 @@ class PlaceConstraintsModule(Module):
                             "--part",
                             ctx.values.part_name,
                         ]
-                        + (options_dict_to_list(ctx.values.extra_opts) if ctx.values.extra_opts else [])
+                        + (
+                            options_dict_to_list(ctx.values.extra_opts)
+                            if ctx.values.extra_opts
+                            else []
+                        )
                     )
                 )
             )

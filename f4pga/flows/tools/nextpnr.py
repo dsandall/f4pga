@@ -66,7 +66,10 @@ class NextPnrBaseModule(Module):
         nextpnr_opts += self.extra_nextpnr_opts
 
         if get_verbosity_level() >= 2:
-            yield "Place-and-routing with nextpnr...\n " f'{nextpnr_cmd} {" ".join(nextpnr_opts)}'
+            yield (
+                "Place-and-routing with nextpnr...\n "
+                f"{nextpnr_cmd} {' '.join(nextpnr_opts)}"
+            )
         else:
             yield "Place-and-routing with nextpnr..."
 
