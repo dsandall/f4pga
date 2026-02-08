@@ -20,6 +20,7 @@
 This utility generates a FASM file with a default bitstream configuration for
 the given device.
 """
+
 import argparse
 import colorsys
 from enum import Enum
@@ -135,10 +136,17 @@ class SwitchboxConfigBuilder:
                     assert key in nodes, key
                     node = nodes[key]
 
-                    key = (self.switchbox.type, pin_loc.stage_id, pin_loc.switch_id, pin_loc.mux_id)
+                    key = (
+                        self.switchbox.type,
+                        pin_loc.stage_id,
+                        pin_loc.switch_id,
+                        pin_loc.mux_id,
+                    )
                     if (
                         key in duplicate  # Mux has multiple inputs selected
-                        and (pin_loc.pin_id in duplicate[key])  # Current selection is duplicate
+                        and (
+                            pin_loc.pin_id in duplicate[key]
+                        )  # Current selection is duplicate
                         and not (key[0].startswith("SB_TOP_IFC"))
                     ):  # Ignore TOP switchboxes
                         print("Warning: duplicate: {} - {}".format(key, pin_loc.pin_id))
@@ -297,7 +305,11 @@ class SwitchboxConfigBuilder:
 
                     # Get FASM features using the switchbox model.
                     features = SwitchboxModel.get_metadata_for_mux(
-                        loc, self.switchbox.stages[stage_id], switch_id, mux_id, node.sel
+                        loc,
+                        self.switchbox.stages[stage_id],
+                        switch_id,
+                        mux_id,
+                        node.sel,
                     )
                     lines.extend(features)
 
@@ -522,17 +534,33 @@ class SwitchboxConfigBuilder:
 
 def main():
     # Parse arguments
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
-    parser.add_argument("--techfile", type=str, required=True, help="Quicklogic 'TechFile' XML file")
-    parser.add_argument("--fasm", type=str, default="default.fasm", help="Output FASM file name")
     parser.add_argument(
-        "--device", type=str, choices=["eos-s3"], default="eos-s3", help="Device name to generate the FASM file for"
+        "--techfile", type=str, required=True, help="Quicklogic 'TechFile' XML file"
     )
     parser.add_argument(
-        "--dump-dot", action="store_true", help="Dump Graphviz .dot files for each routed switchbox type"
+        "--fasm", type=str, default="default.fasm", help="Output FASM file name"
     )
-    parser.add_argument("--allow-routing-failures", action="store_true", help="Skip switchboxes that fail routing")
+    parser.add_argument(
+        "--device",
+        type=str,
+        choices=["eos-s3"],
+        default="eos-s3",
+        help="Device name to generate the FASM file for",
+    )
+    parser.add_argument(
+        "--dump-dot",
+        action="store_true",
+        help="Dump Graphviz .dot files for each routed switchbox type",
+    )
+    parser.add_argument(
+        "--allow-routing-failures",
+        action="store_true",
+        help="Skip switchboxes that fail routing",
+    )
 
     args = parser.parse_args()
 
@@ -578,7 +606,12 @@ def main():
         for pin in switchbox.pins:
             pinmap = {}
             for pin_loc in pin.locs:
-                key = (switchbox.type, pin_loc.stage_id, pin_loc.switch_id, pin_loc.mux_id)
+                key = (
+                    switchbox.type,
+                    pin_loc.stage_id,
+                    pin_loc.switch_id,
+                    pin_loc.mux_id,
+                )
                 if key not in pinmap:
                     pinmap[key] = pin_loc.pin_id
                 else:

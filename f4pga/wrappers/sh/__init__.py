@@ -39,7 +39,9 @@ SH_SUBDIR = "quicklogic" if isQuickLogic else FPGA_FAM
 
 if not isQuickLogic:
     from f4pga.utils.xc7.create_ioplace import main as xc7_create_ioplace
-    from f4pga.utils.xc7.create_place_constraints import main as xc7_create_place_constraints
+    from f4pga.utils.xc7.create_place_constraints import (
+        main as xc7_create_place_constraints,
+    )
 
 
 # Helper functions
@@ -144,7 +146,9 @@ def p_parse_vpr_args(vpr_options=None, log_suffix=None, isQuickLogic=False):
 
 
 def p_parse_vpr_args_xc7(vpr_options=None, log_suffix=None):
-    parser = ArgumentParser(description=__doc__, formatter_class=RawDescriptionHelpFormatter)
+    parser = ArgumentParser(
+        description=__doc__, formatter_class=RawDescriptionHelpFormatter
+    )
     parser.add_argument("--device", "-d", required=False, type=str, help="")
     parser.add_argument("--eblif", "-e", required=True, type=str, help="")
     parser.add_argument("--pcf", "-p", required=False, type=str, help="")
@@ -165,7 +169,9 @@ def p_parse_vpr_args_xc7(vpr_options=None, log_suffix=None):
     if device is None:
         raise Exception("Please provide device name")
 
-    noisy_warnings = "" if log_suffix is None else f"noisy_warnings-{device}_{log_suffix}.log"
+    noisy_warnings = (
+        "" if log_suffix is None else f"noisy_warnings-{device}_{log_suffix}.log"
+    )
 
     if vpr_options is None:
         print("Using default VPR options")
@@ -252,7 +258,9 @@ def p_parse_vpr_args_xc7(vpr_options=None, log_suffix=None):
 
 
 def p_parse_vpr_args_quicklogic(vpr_options=None, log_suffix=None):
-    parser = ArgumentParser(description=__doc__, formatter_class=RawDescriptionHelpFormatter)
+    parser = ArgumentParser(
+        description=__doc__, formatter_class=RawDescriptionHelpFormatter
+    )
     parser.add_argument("--device", "-d", required=True, type=str, help="")
     parser.add_argument("--family", "-f", required=True, type=str, help="")
     parser.add_argument("--eblif", "-e", required=True, type=str, help="")
@@ -278,7 +286,9 @@ def p_parse_vpr_args_quicklogic(vpr_options=None, log_suffix=None):
             "route",
         ]
 
-    noisy_warnings = "" if log_suffix is None else f"noisy_warnings-{args.device}_{log_suffix}.log"
+    noisy_warnings = (
+        "" if log_suffix is None else f"noisy_warnings-{args.device}_{log_suffix}.log"
+    )
 
     vpr_options.extend(
         [
@@ -461,7 +471,11 @@ elif [[ '{device}' =~ ^(ql-.*)$ ]]; then
       --output-format={fmt[0]} \
       > '{place_file_prefix}_iomux.{fmt[1]}'
 """
-                    for fmt in [["jlink", "jlink"], ["openocd", "openocd"], ["binary", "bin"]]
+                    for fmt in [
+                        ["jlink", "jlink"],
+                        ["openocd", "openocd"],
+                        ["binary", "bin"],
+                    ]
                 ]
             )
             + f"""
@@ -534,7 +548,9 @@ VPR_PLACE_FILE='constraints.place'
 
 def route():
     print("[F4PGA] Running (deprecated) route")
-    extra_args = ["--write_timing_summary", "timing_summary.json"] if isQuickLogic else []
+    extra_args = (
+        ["--write_timing_summary", "timing_summary.json"] if isQuickLogic else []
+    )
     p_vpr_run(["--route"] + extra_args, env=p_vpr_env_from_args("pack"))
     Path("vpr_stdout.log").rename("route.log")
 
@@ -573,10 +589,10 @@ def write_fasm(genfasm_extra_args=None):
     print("[F4PGA] Running (deprecated) write fasm")
     p_run_bash_cmds(
         f"""
-'{which('genfasm')}' \
+'{which("genfasm")}' \
   ${{ARCH_DEF}} ${{EBLIF}} --device ${{DEVICE_NAME}} \
   ${{VPR_OPTIONS}} \
-  --read_rr_graph ${{RR_GRAPH}} {' '.join(genfasm_extra_args) if genfasm_extra_args is not None else ''}
+  --read_rr_graph ${{RR_GRAPH}} {" ".join(genfasm_extra_args) if genfasm_extra_args is not None else ""}
 """
         + """
 TOP="${EBLIF%.*}"
@@ -608,7 +624,7 @@ eval set -- $(
   getopt \
     --options=d:f:b:p: \
     --longoptions=device:,fasm:,bit:,part: \
-    --name $0 -- {' '.join(sys_argv[1:])}
+    --name $0 -- {" ".join(sys_argv[1:])}
 )
 """
         + """
@@ -705,7 +721,9 @@ PYTHONPATH='{F4PGA_SHARE_DIR}/scripts':$PYTHONPATH \
 
 def generate_bitstream():
     print("[F4PGA] Running (deprecated) generate_bitstream")
-    parser = ArgumentParser(description=__doc__, formatter_class=RawDescriptionHelpFormatter)
+    parser = ArgumentParser(
+        description=__doc__, formatter_class=RawDescriptionHelpFormatter
+    )
     parser.add_argument("--device", "-d", required=True, type=str, help="")
     parser.add_argument("--fasm", "-f", required=True, type=str, help="")
     parser.add_argument("--bit", "-b", required=True, type=str, help="")
@@ -769,7 +787,9 @@ def ql():
 
 def fasm2bels():
     print("[F4PGA] Running (deprecated) fasm2bels")
-    parser = ArgumentParser(description=__doc__, formatter_class=RawDescriptionHelpFormatter)
+    parser = ArgumentParser(
+        description=__doc__, formatter_class=RawDescriptionHelpFormatter
+    )
     parser.add_argument("--device", "-d", required=True, type=str, help="")
     parser.add_argument("--bit", "-b", required=True, type=str, help="")
     parser.add_argument("--part", "-P", required=True, type=str, help="")

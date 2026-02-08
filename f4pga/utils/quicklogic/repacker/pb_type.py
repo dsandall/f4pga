@@ -19,6 +19,7 @@
 """
 Utilities for representing pb_type hierarchy as defined in VPR architecture
 """
+
 import re
 from copy import deepcopy
 from enum import Enum
@@ -204,7 +205,9 @@ class Model:
     def __str__(self):
         string = self.name
         for port in self.ports.values():
-            string += " {}:{}[{}:0]".format(port.type.name[0].upper(), port.name, port.width - 1)
+            string += " {}:{}[{}:0]".format(
+                port.type.name[0].upper(), port.name, port.width - 1
+            )
         return string
 
     def __repr__(self):
@@ -311,7 +314,9 @@ class PbType:
         """
 
         # TODO: Compile the regex upfront
-        match = re.fullmatch(r"(?P<port>[^\s\[\]\.]+)(\[(?P<bits>[^\s\[\]]+)\])?", port_spec)
+        match = re.fullmatch(
+            r"(?P<port>[^\s\[\]\.]+)(\[(?P<bits>[^\s\[\]]+)\])?", port_spec
+        )
         assert match is not None, port_spec
 
         port = match.group("port")

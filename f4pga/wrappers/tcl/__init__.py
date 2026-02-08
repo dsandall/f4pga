@@ -25,7 +25,10 @@ from f4pga.context import FPGA_FAM
 
 ROOT = Path(__file__).resolve().parent
 
-ARCHS = {"xc7": ["artix7", "artix7_100t", "artix7_200t", "zynq7", "zynq7_z020", "spartan7"], "eos-s3": ["ql-s3", "pp3"]}
+ARCHS = {
+    "xc7": ["artix7", "artix7_100t", "artix7_200t", "zynq7", "zynq7_z020", "spartan7"],
+    "eos-s3": ["ql-s3", "pp3"],
+}
 
 
 def get_script_path(arch=None, pnrtool="vpr"):

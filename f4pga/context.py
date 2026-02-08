@@ -37,4 +37,6 @@ if install_dir is None:
 else:
     F4PGA_INSTALL_DIR = Path(install_dir)
 
-F4PGA_SHARE_DIR = Path(environ.get("F4PGA_SHARE_DIR", F4PGA_INSTALL_DIR / FPGA_FAM / "share/f4pga"))
+F4PGA_SHARE_DIR = Path(
+    environ.get("F4PGA_SHARE_DIR", F4PGA_INSTALL_DIR / FPGA_FAM / "share/f4pga")
+)

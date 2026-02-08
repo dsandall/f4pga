@@ -46,13 +46,25 @@ def test_lut_padding(monkeypatch, lut_width, lut_inputs):
     basedir = os.path.dirname(__file__)
 
     qlfpga_plugins = os.path.join(
-        basedir, "..", "..", "..", "..", "..", "..", "build", "quicklogic", "third_party", "qlfpga-symbiflow-plugins"
+        basedir,
+        "..",
+        "..",
+        "..",
+        "..",
+        "..",
+        "..",
+        "build",
+        "quicklogic",
+        "third_party",
+        "qlfpga-symbiflow-plugins",
     )
 
     vpr_arch = os.path.join(qlfpga_plugins, "qlf_k4n8/slow/vpr_arch/UMC22nm_vpr.xml")
     repacking_rules = os.path.join(qlfpga_plugins, "qlf_k4n8/repacking_rules.json")
 
-    eblif_ref = os.path.join(basedir, "lut{}_{}.golden.eblif".format(lut_width, lut_inputs))
+    eblif_ref = os.path.join(
+        basedir, "lut{}_{}.golden.eblif".format(lut_width, lut_inputs)
+    )
     eblif_in = os.path.join(basedir, "lut{}.eblif".format(lut_width))
     net_in = os.path.join(basedir, "lut{}_{}.net".format(lut_width, lut_inputs))
 

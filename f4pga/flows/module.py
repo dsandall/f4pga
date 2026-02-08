@@ -75,7 +75,9 @@ class ModuleContext:
     share: str  #  Absolute path to F4PGA's share directory
     bin: str  #  Absolute path to F4PGA's bin directory
     takes: SimpleNamespace  #  Maps symbolic dependency names to relative paths.
-    produces: SimpleNamespace  #  Contains mappings for explicitely specified dependencies.
+    produces: (
+        SimpleNamespace  #  Contains mappings for explicitely specified dependencies.
+    )
     #  Useful mostly for checking for on-demand optional outputs (such as logs) with
     #    `is_output_explicit` method.
     outputs: SimpleNamespace  #  Contains mappings for all available outputs.
@@ -97,11 +99,21 @@ class ModuleContext:
             name, spec = decompose_depname(name)
             value = deps_cfg.get(name)
             if value is None and spec == "req":
-                fatal(-1, f"Dependency `{name}` is required by module `{self.module_name}` but wasn't provided")
+                fatal(
+                    -1,
+                    f"Dependency `{name}` is required by module `{self.module_name}` but wasn't provided",
+                )
             setattr(obj, name, self.r_env.resolve(value))
 
     # `config` should be a dictionary given as modules input.
-    def __init__(self, module: Module, config: "dict[str, ]", r_env: ResolutionEnv, share: str, bin: str):
+    def __init__(
+        self,
+        module: Module,
+        config: "dict[str, ]",
+        r_env: ResolutionEnv,
+        share: str,
+        bin: str,
+    ):
         self.module_name = module.name
         self.takes = SimpleNamespace()
         self.produces = SimpleNamespace()

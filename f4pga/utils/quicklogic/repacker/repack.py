@@ -51,8 +51,12 @@ from f4pga.utils.quicklogic.repacker.packed_netlist import PackedNetlist
 from f4pga.utils.quicklogic.repacker.pb_rr_graph import Graph, NodeType
 from f4pga.utils.quicklogic.repacker.pb_rr_graph_router import Router
 
-from f4pga.utils.quicklogic.repacker.pb_rr_graph_netlist import load_clb_nets_into_pb_graph
-from f4pga.utils.quicklogic.repacker.pb_rr_graph_netlist import build_packed_netlist_from_pb_graph
+from f4pga.utils.quicklogic.repacker.pb_rr_graph_netlist import (
+    load_clb_nets_into_pb_graph,
+)
+from f4pga.utils.quicklogic.repacker.pb_rr_graph_netlist import (
+    build_packed_netlist_from_pb_graph,
+)
 
 from f4pga.utils.quicklogic.repacker.pb_type import PbType, Model, PortType
 from f4pga.utils.pcf import parse_simple_pcf
@@ -175,7 +179,9 @@ def fixup_route_throu_luts(clb_block, new_net_ids):
         net_pairs.append((net_inp, net_out))
 
         # Insert the route-throu LUT as an explicit block
-        lut_block = pn.Block(name=net_out, instance="lut[0]", mode="default", parent=block)
+        lut_block = pn.Block(
+            name=net_out, instance="lut[0]", mode="default", parent=block
+        )
         block.blocks[lut_block.instance] = lut_block
 
         # Add LUT ports with connections
@@ -185,13 +191,19 @@ def fixup_route_throu_luts(clb_block, new_net_ids):
             width=blk_inp.port.width,
             connections={
                 blk_inp.pin: pn.Connection(
-                    driver=block.type, port=blk_inp.port.name, pin=blk_inp.pin, interconnect="direct"
+                    driver=block.type,
+                    port=blk_inp.port.name,
+                    pin=blk_inp.pin,
+                    interconnect="direct",
                 )
             },
         )
 
         lut_block.ports[blk_out.port.name] = pn.Port(
-            name=blk_out.port.name, type=blk_out.port.type, width=blk_out.port.width, connections={blk_out.pin: net_out}
+            name=blk_out.port.name,
+            type=blk_out.port.type,
+            width=blk_out.port.width,
+            connections={blk_out.pin: net_out},
         )
 
         # Set input port rotation. This will allow to have a simple LUT-1
@@ -201,7 +213,10 @@ def fixup_route_throu_luts(clb_block, new_net_ids):
         # Update the block output port to reference the LUT
         blk_out.port.connections = {
             blk_out.pin: pn.Connection(
-                driver=lut_block.instance, port=blk_out.port.name, pin=blk_out.pin, interconnect="direct"
+                driver=lut_block.instance,
+                port=blk_out.port.name,
+                pin=blk_out.pin,
+                interconnect="direct",
             )
         }
 
@@ -288,7 +303,11 @@ def identify_blocks_to_repack(clb_block, repacking_rules):
             return
 
         # Check if the current block is a LUT
-        is_lut = len(block.blocks) == 1 and "lut[0]" in block.blocks and block.blocks["lut[0]"].is_leaf  # noqa: E127
+        is_lut = (
+            len(block.blocks) == 1
+            and "lut[0]" in block.blocks
+            and block.blocks["lut[0]"].is_leaf
+        )  # noqa: E127
 
         # Check if the block match the path node. Check type and mode
         block_node = PathNode.from_string(block.instance)
@@ -461,7 +480,9 @@ def identify_repack_target_candidates(clb_pbtype, path):
 # =============================================================================
 
 
-def annotate_net_endpoints(clb_graph, block, block_path=None, constraints=None, port_map=None, def_map=None):
+def annotate_net_endpoints(
+    clb_graph, block, block_path=None, constraints=None, port_map=None, def_map=None
+):
     """
     This function annotates SOURCE and SINK nodes of the block pointed by
     block_path with nets of their corresponding ports but from the other given
@@ -523,7 +544,9 @@ def annotate_net_endpoints(clb_graph, block, block_path=None, constraints=None, 
             key = (port.name, port.index)
             if not net and key in def_map:
                 net = def_map[key]
-                logging.debug("    Unconnected port '{}' defaults to {}".format(port, net))
+                logging.debug(
+                    "    Unconnected port '{}' defaults to {}".format(port, net)
+                )
 
         # Skip unconnected ports
         if not net:
@@ -873,11 +896,17 @@ def load_json_constraints(json_root):
     constraints = []
     for json_constr in json_constrs:
         constraint = RepackingConstraint(
-            net=json_constr["net"], block_type=json_constr["tile"], port_spec=json_constr["pin"]
+            net=json_constr["net"],
+            block_type=json_constr["tile"],
+            port_spec=json_constr["pin"],
         )
         constraints.append(constraint)
 
-        logging.debug("  {}: {}.{}[{}]".format(constraint.net, constraint.block_type, constraint.port, constraint.pin))
+        logging.debug(
+            "  {}: {}.{}[{}]".format(
+                constraint.net, constraint.block_type, constraint.port, constraint.pin
+            )
+        )
 
     return constraints
 
@@ -898,16 +927,30 @@ def load_pcf_constraints(pcf):
             # There are only "clb" and "io" tile types
             # We select the same global clock for
             # each tile where net is used
-            constraint = RepackingConstraint(net=pcf_constr.net, block_type="clb", port_spec=pcf_constr.pin)
+            constraint = RepackingConstraint(
+                net=pcf_constr.net, block_type="clb", port_spec=pcf_constr.pin
+            )
             constraints.append(constraint)
             logging.debug(
-                "  {}: {}.{}[{}]".format(constraint.net, constraint.block_type, constraint.port, constraint.pin)
+                "  {}: {}.{}[{}]".format(
+                    constraint.net,
+                    constraint.block_type,
+                    constraint.port,
+                    constraint.pin,
+                )
             )
 
-            constraint = RepackingConstraint(net=pcf_constr.net, block_type="io", port_spec=pcf_constr.pin)
+            constraint = RepackingConstraint(
+                net=pcf_constr.net, block_type="io", port_spec=pcf_constr.pin
+            )
             constraints.append(constraint)
             logging.debug(
-                "  {}: {}.{}[{}]".format(constraint.net, constraint.block_type, constraint.port, constraint.pin)
+                "  {}: {}.{}[{}]".format(
+                    constraint.net,
+                    constraint.block_type,
+                    constraint.port,
+                    constraint.pin,
+                )
             )
 
     return constraints
@@ -922,7 +965,9 @@ def write_packed_netlist(fname, netlist):
     """
 
     xml_tree = ET.ElementTree(netlist.to_etree())
-    xml_data = '<?xml version="1.0"?>\n' + ET.tostring(xml_tree, pretty_print=True).decode("utf-8")  # noqa: E127
+    xml_data = '<?xml version="1.0"?>\n' + ET.tostring(
+        xml_tree, pretty_print=True
+    ).decode("utf-8")  # noqa: E127
 
     with open(fname, "w") as fp:
         fp.write(xml_data)
@@ -933,18 +978,58 @@ def write_packed_netlist(fname, netlist):
 
 def main():
     # Parse arguments
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
-    parser.add_argument("--vpr-arch", type=str, required=True, help="VPR architecture XML file")
-    parser.add_argument("--repacking-rules", type=str, required=True, help="JSON file describing repacking rules")
-    parser.add_argument("--json-constraints", type=str, default=None, help="JSON file describing repacking constraints")
-    parser.add_argument("--pcf-constraints", type=str, default=None, help="PCF file describing repacking constraints")
-    parser.add_argument("--eblif-in", type=str, required=True, help="Input circuit netlist in BLIF/EBLIF format")
-    parser.add_argument("--net-in", type=str, required=True, help="Input VPR packed netlist (.net)")
-    parser.add_argument("--place-in", type=str, default=None, help="Input VPR placement file (.place)")
-    parser.add_argument("--eblif-out", type=str, default=None, help="Output circuit netlist BLIF/EBLIF file")
-    parser.add_argument("--net-out", type=str, default=None, help="Output VPR packed netlist (.net) file")
-    parser.add_argument("--place-out", type=str, default=None, help="Output VPR placement (.place) file")
+    parser.add_argument(
+        "--vpr-arch", type=str, required=True, help="VPR architecture XML file"
+    )
+    parser.add_argument(
+        "--repacking-rules",
+        type=str,
+        required=True,
+        help="JSON file describing repacking rules",
+    )
+    parser.add_argument(
+        "--json-constraints",
+        type=str,
+        default=None,
+        help="JSON file describing repacking constraints",
+    )
+    parser.add_argument(
+        "--pcf-constraints",
+        type=str,
+        default=None,
+        help="PCF file describing repacking constraints",
+    )
+    parser.add_argument(
+        "--eblif-in",
+        type=str,
+        required=True,
+        help="Input circuit netlist in BLIF/EBLIF format",
+    )
+    parser.add_argument(
+        "--net-in", type=str, required=True, help="Input VPR packed netlist (.net)"
+    )
+    parser.add_argument(
+        "--place-in", type=str, default=None, help="Input VPR placement file (.place)"
+    )
+    parser.add_argument(
+        "--eblif-out",
+        type=str,
+        default=None,
+        help="Output circuit netlist BLIF/EBLIF file",
+    )
+    parser.add_argument(
+        "--net-out",
+        type=str,
+        default=None,
+        help="Output VPR packed netlist (.net) file",
+    )
+    parser.add_argument(
+        "--place-out", type=str, default=None, help="Output VPR placement (.place) file"
+    )
     parser.add_argument(
         "--absorb_buffer_luts",
         type=str,
@@ -952,11 +1037,19 @@ def main():
         choices=["on", "off"],
         help="Controls whether buffer LUTs are to be absorbed downstream",
     )
-    parser.add_argument("--dump-dot", action="store_true", help="Dump graphviz .dot files for pb_type graphs")
     parser.add_argument(
-        "--dump-netlist", action="store_true", help="Dump .eblif files at different stages of EBLIF netlist processing"
+        "--dump-dot",
+        action="store_true",
+        help="Dump graphviz .dot files for pb_type graphs",
     )
-    parser.add_argument("--log", type=str, default=None, help="Log file name (def. stdout)")
+    parser.add_argument(
+        "--dump-netlist",
+        action="store_true",
+        help="Dump .eblif files at different stages of EBLIF netlist processing",
+    )
+    parser.add_argument(
+        "--log", type=str, default=None, help="Log file name (def. stdout)"
+    )
     parser.add_argument(
         "--log-level",
         type=str,
@@ -1085,7 +1178,11 @@ def main():
         invalid_nets = constrained_nets - all_nets
 
         if invalid_nets:
-            logging.critical(" Error: constraints refer to nonexistent net(s): {}".format(", ".join(invalid_nets)))
+            logging.critical(
+                " Error: constraints refer to nonexistent net(s): {}".format(
+                    ", ".join(invalid_nets)
+                )
+            )
             exit(-1)
 
     # Process netlist CLBs
@@ -1107,7 +1204,11 @@ def main():
         # Find a corresponding root pb_type (complex block) in the architecture
         clb_pbtype = clb_pbtypes.get(clb_block.type, None)
         if clb_pbtype is None:
-            logging.error("Complex block type '{}' not found in the VPR arch".format(clb_block.type))
+            logging.error(
+                "Complex block type '{}' not found in the VPR arch".format(
+                    clb_block.type
+                )
+            )
             exit(-1)
 
         # Identify and fixup route-throu LUTs
@@ -1172,7 +1273,9 @@ def main():
         repack_targets = set()
         for block, rule, (path, pbtype) in blocks_to_repack:
             if path in repack_targets:
-                logging.error("Multiple blocks are to be repacked into '{}'".format(path))
+                logging.error(
+                    "Multiple blocks are to be repacked into '{}'".format(path)
+                )
             repack_targets.add(path)
 
         # Stats
@@ -1236,7 +1339,9 @@ def main():
 
         # For the CLB
         logging.debug("   " + str(clb_block))
-        annotate_net_endpoints(clb_graph=graph, block=clb_block, constraints=repacking_constraints)
+        annotate_net_endpoints(
+            clb_graph=graph, block=clb_block, constraints=repacking_constraints
+        )
 
         # For repacked leafs
         for block, rule, (path, dst_pbtype) in blocks_to_repack:
@@ -1247,7 +1352,9 @@ def main():
             dst_blif_model = dst_pbtype.blif_model.split(maxsplit=1)[-1]
 
             # Annotate
-            annotate_net_endpoints(clb_graph=graph, block=block, block_path=path, port_map=rule.port_map)
+            annotate_net_endpoints(
+                clb_graph=graph, block=block, block_path=path, port_map=rule.port_map
+            )
 
         # Initialize router
         logging.debug("  Initializing router...")
@@ -1361,7 +1468,9 @@ def main():
                 )
                 break
         else:
-            logging.warn(" The placement file '{}' has no header!".format(args.place_in))
+            logging.warn(
+                " The placement file '{}' has no header!".format(args.place_in)
+            )
 
         # Write the patched placement
         fname = args.place_out if args.place_out else "repacked.place"

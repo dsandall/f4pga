@@ -66,7 +66,7 @@ from f4pga.flows.module import Module, ModuleContext
 def _get_param(params, name: str):
     param = params.get(name)
     if not param:
-        raise Exception(f"generic module wrapper parameters " f"missing `{name}` field")
+        raise Exception(f"generic module wrapper parameters missing `{name}` field")
     return param
 
 
@@ -134,8 +134,12 @@ class GenericScriptWrapperModule(Module):
     def _add_extra_values_to_env(ctx: ModuleContext):
         for take_name, take_path in vars(ctx.takes).items():
             if take_path is not None:
-                ctx.r_env.values[f":{take_name}[noext]"] = deep(lambda p: str(Path(p).with_suffix("")))(take_path)
-                ctx.r_env.values[f":{take_name}[dir]"] = deep(lambda p: str(Path(p).parent.resolve()))(take_path)
+                ctx.r_env.values[f":{take_name}[noext]"] = deep(
+                    lambda p: str(Path(p).with_suffix(""))
+                )(take_path)
+                ctx.r_env.values[f":{take_name}[dir]"] = deep(
+                    lambda p: str(Path(p).parent.resolve())
+                )(take_path)
 
     def map_io(self, ctx: ModuleContext):
         self._add_extra_values_to_env(ctx)
@@ -157,7 +161,11 @@ class GenericScriptWrapperModule(Module):
         cwd = ctx.r_env.resolve(self.cwd)
 
         sub_args = (
-            ([ctx.r_env.resolve(self.interpreter, final=True)] if self.interpreter else [])
+            (
+                [ctx.r_env.resolve(self.interpreter, final=True)]
+                if self.interpreter
+                else []
+            )
             + (
                 self.script_path
                 if isinstance(self.script_path, list)

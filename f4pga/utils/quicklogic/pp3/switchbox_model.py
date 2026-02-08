@@ -63,7 +63,9 @@ class SwitchboxModel(object):
 
         # A mux in the STREET stage
         elif stage.type == "STREET":
-            feature = "I_street.Isb{}{}.I_M{}.I_pg{}".format(stage.id + 1, switch_id + 1, mux_id, pin_id)
+            feature = "I_street.Isb{}{}.I_M{}.I_pg{}".format(
+                stage.id + 1, switch_id + 1, mux_id, pin_id
+            )
 
         else:
             assert False, stage
@@ -97,8 +99,16 @@ class SwitchboxModel(object):
         """
 
         for connection in switchbox.connections:
-            c_src = (connection.src.stage_id, connection.src.switch_id, connection.src.mux_id)
-            c_dst = (connection.dst.stage_id, connection.dst.switch_id, connection.dst.mux_id)
+            c_src = (
+                connection.src.stage_id,
+                connection.src.switch_id,
+                connection.src.mux_id,
+            )
+            c_dst = (
+                connection.dst.stage_id,
+                connection.dst.switch_id,
+                connection.dst.mux_id,
+            )
 
             if c_src == src and c_dst == dst:
                 return connection
@@ -175,7 +185,9 @@ class SwitchboxModel(object):
                             dst = final_route[i][:3]
                             src = final_route[i + 1][:3]
 
-                            connection = SwitchboxModel.get_connection(switchbox, src, dst)
+                            connection = SwitchboxModel.get_connection(
+                                switchbox, src, dst
+                            )
 
                             sel = connection.dst.pin_id
                             final_route[i] = tuple(list(final_route[i]) + [sel])
@@ -226,7 +238,12 @@ class SwitchboxModel(object):
 
             key = (src.stage_id, src.switch_id, src.mux_id)
             if key in driver_timing:
-                assert driver_timing[key] == timing, (self.loc, key, driver_timing[key], timing)
+                assert driver_timing[key] == timing, (
+                    self.loc,
+                    key,
+                    driver_timing[key],
+                    timing,
+                )
             else:
                 driver_timing[key] = timing
 
@@ -273,7 +290,9 @@ class SwitchboxModel(object):
                 self.mux_input_to_node[key] = inp_node
 
                 # Get mux metadata
-                metadata = self.get_metadata_for_mux(self.phy_loc, stage, switch.id, mux.id, pin.id)
+                metadata = self.get_metadata_for_mux(
+                    self.phy_loc, stage, switch.id, mux.id, pin.id
+                )
 
                 if len(metadata):
                     meta_name = "fasm_features"
@@ -286,7 +305,9 @@ class SwitchboxModel(object):
                 # there is none then use the delayless switch. Probably the
                 # edge is connected to a const.
                 if pin.id in mux.timing:
-                    switch_id = self.graph.get_switch_id(mux.timing[pin.id].sink.vpr_switch)
+                    switch_id = self.graph.get_switch_id(
+                        mux.timing[pin.id].sink.vpr_switch
+                    )
                 else:
                     switch_id = self.graph.get_delayless_switch_id()
 
@@ -327,7 +348,13 @@ class SwitchboxModel(object):
             src_node = self.mux_output_to_node[key]
 
             # Connect
-            connect(self.graph, src_node, dst_node, switch_id=switch_id, segment_id=segment_id)
+            connect(
+                self.graph,
+                src_node,
+                dst_node,
+                switch_id=switch_id,
+                segment_id=segment_id,
+            )
 
     def _create_input_drivers(self):
         """
@@ -382,7 +409,13 @@ class SwitchboxModel(object):
                 switch_id = self.graph.get_delayless_switch_id()
 
             # Connect
-            connect(self.graph, inp_node, drv_node, switch_id=switch_id, segment_id=segment_id)
+            connect(
+                self.graph,
+                inp_node,
+                drv_node,
+                switch_id=switch_id,
+                segment_id=segment_id,
+            )
 
             # Now connect the driver node with its loads
             switch_id = self.graph.get_switch_id("short")
@@ -390,7 +423,13 @@ class SwitchboxModel(object):
                 key = (loc.stage_id, loc.switch_id, loc.mux_id, loc.pin_id)
                 dst_node = self.mux_input_to_node[key]
 
-                connect(self.graph, drv_node, dst_node, switch_id=switch_id, segment_id=segment_id)
+                connect(
+                    self.graph,
+                    drv_node,
+                    dst_node,
+                    switch_id=switch_id,
+                    segment_id=segment_id,
+                )
 
     def build(self):
         """
@@ -480,8 +519,12 @@ class QmuxSwitchboxModel(SwitchboxModel):
             routes = {}
             for pin in PINS:
                 # Find the routes
-                vcc_routes = self.get_switchbox_routes(self.switchbox, eps[pin].pin, "VCC")
-                gnd_routes = self.get_switchbox_routes(self.switchbox, eps[pin].pin, "GND")
+                vcc_routes = self.get_switchbox_routes(
+                    self.switchbox, eps[pin].pin, "VCC"
+                )
+                gnd_routes = self.get_switchbox_routes(
+                    self.switchbox, eps[pin].pin, "GND"
+                )
 
                 routes[pin] = {"VCC": vcc_routes, "GND": gnd_routes}
 

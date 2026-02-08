@@ -118,7 +118,9 @@ class VModule(object):
         vectors = dict()
         new_signals = dict()
 
-        array = re.compile(r"(?P<varname>[a-zA-Z_][a-zA-Z_0-9$]+)\[(?P<arrindex>[0-9]+)\]")
+        array = re.compile(
+            r"(?P<varname>[a-zA-Z_][a-zA-Z_0-9$]+)\[(?P<arrindex>[0-9]+)\]"
+        )
 
         # first find the vectors
         for signalid in signals:
@@ -144,7 +146,9 @@ class VModule(object):
 
         # add vectors to signals dict
         for vec in vectors:
-            name = "[{max}:{min}] {name}".format(max=vectors[vec]["max"], min=vectors[vec]["min"], name=vec)
+            name = "[{max}:{min}] {name}".format(
+                max=vectors[vec]["max"], min=vectors[vec]["min"], name=vec
+            )
             id = Wire(name, "vector", False)
             new_signals[id] = name
 
@@ -174,7 +178,9 @@ class VModule(object):
         dict: parameters with grouped array indices
         """
         newparameters = dict()
-        arraydst = re.compile(r"(?P<varname>[a-zA-Z_][a-zA-Z_0-9$]+)\[(?P<arrindex>[0-9]+)\]")
+        arraydst = re.compile(
+            r"(?P<varname>[a-zA-Z_][a-zA-Z_0-9$]+)\[(?P<arrindex>[0-9]+)\]"
+        )
         for dst, src in parameters.items():
             match = arraydst.match(dst)
             if match:
@@ -238,7 +244,9 @@ class VModule(object):
         fixedparameters = self.group_array_values(parameters)
         # get inputs, strip vector's pin indexes
         input_pins = [
-            pin.name.split("[")[0] for pin in self.cells_library[typ].pins if pin.direction == PinDirection.INPUT
+            pin.name.split("[")[0]
+            for pin in self.cells_library[typ].pins
+            if pin.direction == PinDirection.INPUT
         ]
         dummy_wires = []
 
@@ -285,7 +293,7 @@ class VModule(object):
 
             params.append(".{}({})".format(pin_map.get("IP", "IP"), ioname))
 
-        result += f',\n{" " * len(result)}'.join(sorted(params)) + ");\n"
+        result += f",\n{' ' * len(result)}".join(sorted(params)) + ");\n"
         wires = ""
         for wire in dummy_wires:
             wires += f"\n{wire}"
@@ -331,7 +339,11 @@ class VModule(object):
         for cell in cells:
             cell_name = "{}{}".format(cell.type, cell.index)
 
-            cellpins = [pin.name for pin in self.cells_library[cell.type].pins if pin.direction == direction]
+            cellpins = [
+                pin.name
+                for pin in self.cells_library[cell.type].pins
+                if pin.direction == direction
+            ]
 
             # check every connection pin if it has
             for pin in cellpins:
@@ -352,7 +364,11 @@ class VModule(object):
             cell_name = "{}{}".format(cell.type, cell.index)
 
             cell_connections[cell_name] = dict()
-            cellpins = [pin.name for pin in self.cells_library[cell.type].pins if pin.direction == direction]
+            cellpins = [
+                pin.name
+                for pin in self.cells_library[cell.type].pins
+                if pin.direction == direction
+            ]
 
             for key in connections.keys():
                 if key in cellpins:
@@ -410,7 +426,9 @@ class VModule(object):
             inverted = False
         else:
             # determine if inverted
-            inverted = inputname in self.belinversions[loc][self.vpr_tile_grid[loc].type]
+            inverted = (
+                inputname in self.belinversions[loc][self.vpr_tile_grid[loc].type]
+            )
         wireid = Wire(wire[0], wire[1], inverted)
         if wireid in self.wires:
             # if wire already exists, use it
@@ -423,14 +441,18 @@ class VModule(object):
             wirename = self.wires[uninvertedwireid]
         else:
             srcname = self.vpr_tile_grid[wire[0]].name
-            type_connections = self.get_bel_type_and_connections(wire[0], wire[1], PinDirection.OUTPUT)
+            type_connections = self.get_bel_type_and_connections(
+                wire[0], wire[1], PinDirection.OUTPUT
+            )
             # there should be only one type here
             srctype = [type for type in type_connections.keys()][0]
             srconame = wire[1]
             if srctype == "SYN_IO":
                 # if source is input, use its name
                 if wire[0] not in self.ios:
-                    self.ios[wire[0]] = VerilogIO(name=self.new_io_name("input"), direction="input", ioloc=wire[0])
+                    self.ios[wire[0]] = VerilogIO(
+                        name=self.new_io_name("input"), direction="input", ioloc=wire[0]
+                    )
                 assert self.ios[wire[0]].direction == "input"
                 wirename = self.ios[wire[0]].name
             else:
@@ -454,7 +476,10 @@ class VModule(object):
                 # add assign to output
                 self.assigns[self.ios[loc].name] = wirename
 
-        if not inverted or (self.useinversionpins and inputname in self.inversionpins[self.vpr_tile_grid[loc].type]):
+        if not inverted or (
+            self.useinversionpins
+            and inputname in self.inversionpins[self.vpr_tile_grid[loc].type]
+        ):
             # if not inverted or we're not inverting, just finish
             return wirename
 
@@ -478,7 +503,9 @@ class VModule(object):
 
         # parse outputs first to properly handle namings
         for currloc, connections in self.designconnections.items():
-            type_connections = self.get_bel_type_and_connections(currloc, connections, PinDirection.OUTPUT)
+            type_connections = self.get_bel_type_and_connections(
+                currloc, connections, PinDirection.OUTPUT
+            )
 
             for currtype, connections in type_connections.items():
                 currname = self.get_element_name(currtype, currloc)
@@ -516,7 +543,9 @@ class VModule(object):
             # Current location may be a multi cell location.
             # Split the connection list into a to a set of connections
             # for each used cell type
-            type_connections = self.get_bel_type_and_connections(currloc, connections, PinDirection.INPUT)
+            type_connections = self.get_bel_type_and_connections(
+                currloc, connections, PinDirection.INPUT
+            )
 
             for currtype in type_connections:
                 currname = self.get_element_name(currtype, currloc)
@@ -538,7 +567,14 @@ class VModule(object):
                         continue
                     srctype = self.vpr_tile_grid[wire[0]].type
                     srctype_cells = self.vpr_tile_types[srctype].cells
-                    if len(set(srctype_cells).intersection(set(["BIDIR", "LOGIC", "ASSP", "RAM", "MULT"]))) > 0:
+                    if (
+                        len(
+                            set(srctype_cells).intersection(
+                                set(["BIDIR", "LOGIC", "ASSP", "RAM", "MULT"])
+                            )
+                        )
+                        > 0
+                    ):
                         # FIXME handle already inverted pins
                         # TODO handle inouts
                         wirename = self.get_wire(currloc, wire, inputname)
@@ -650,7 +686,9 @@ class VModule(object):
                     # Add the input if used
                     if direction is not None:
                         name = self.get_io_name(eloc)
-                        self.ios[eloc] = VerilogIO(name=name, direction=direction, ioloc=eloc)
+                        self.ios[eloc] = VerilogIO(
+                            name=name, direction=direction, ioloc=eloc
+                        )
 
     def generate_verilog(self):
         """Creates Verilog module
@@ -688,9 +726,11 @@ class VModule(object):
                 for element in locelements.values():
                     if element.type != "SYN_IO":
                         elements += "\n"
-                        elements += self.form_verilog_element(eloc, element.type, element.name, element.ios)
+                        elements += self.form_verilog_element(
+                            eloc, element.type, element.name, element.ios
+                        )
 
-        verilog = f"module top ({ios});\n" f"{wires}" f"{assigns}" f"{elements}" f"\n" f"endmodule"
+        verilog = f"module top ({ios});\n{wires}{assigns}{elements}\nendmodule"
         return verilog
 
     def generate_pcf(self):

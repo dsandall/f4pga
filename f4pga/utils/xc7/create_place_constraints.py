@@ -18,7 +18,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-""" Convert a PCF file into a VPR io.place file. """
+"""Convert a PCF file into a VPR io.place file."""
+
 from __future__ import print_function
 import argparse
 import sys
@@ -123,8 +124,16 @@ class PlaceConstraints(object):
             if name in constrained_blocks:
                 existing = constrained_blocks[name]
 
-                if existing.x != constraint.x or existing.y != constraint.y or existing.z != constraint.z:
-                    print("Error: block '{}' has multiple conflicting constraints!".format(name))
+                if (
+                    existing.x != constraint.x
+                    or existing.y != constraint.y
+                    or existing.z != constraint.z
+                ):
+                    print(
+                        "Error: block '{}' has multiple conflicting constraints!".format(
+                            name
+                        )
+                    )
                     print("", constrained_blocks[name])
                     print("", constraint)
                     exit(-1)
@@ -192,7 +201,17 @@ class PlaceConstraints(object):
 CLOCKS = {
     "PLLE2_ADV_VPR": {
         "sinks": frozenset(("CLKFBIN", "CLKIN1", "CLKIN2", "DCLK")),
-        "sources": frozenset(("CLKFBOUT", "CLKOUT0", "CLKOUT1", "CLKOUT2", "CLKOUT3", "CLKOUT4", "CLKOUT5")),
+        "sources": frozenset(
+            (
+                "CLKFBOUT",
+                "CLKOUT0",
+                "CLKOUT1",
+                "CLKOUT2",
+                "CLKOUT3",
+                "CLKOUT4",
+                "CLKOUT5",
+            )
+        ),
         "type": "PLLE2_ADV",
     },
     "MMCME2_ADV_VPR": {
@@ -419,7 +438,15 @@ class VprGrid(object):
 
 
 class ClockPlacer(object):
-    def __init__(self, vpr_grid, io_locs, blif_data, roi, graph_limit, allow_bufg_logic_sources=False):
+    def __init__(
+        self,
+        vpr_grid,
+        io_locs,
+        blif_data,
+        roi,
+        graph_limit,
+        allow_bufg_logic_sources=False,
+    ):
         self.roi = roi
         self.cmt_to_bufg_tile = {}
         self.bufg_from_cmt = {
@@ -434,24 +461,32 @@ class ClockPlacer(object):
         site_type_dict = vpr_grid.get_site_type_dict()
 
         try:
-            top_cmt_tile = next(k for k, v in cmt_dict.items() if k.startswith("CLK_BUFG_TOP"))
+            top_cmt_tile = next(
+                k for k, v in cmt_dict.items() if k.startswith("CLK_BUFG_TOP")
+            )
             _, thresh_top_y = cmt_dict[top_cmt_tile]["canon_loc"]
         except StopIteration:
             thresh_top_y = None
 
         try:
-            bot_cmt_tile = next(k for k, v in cmt_dict.items() if k.startswith("CLK_BUFG_BOT"))
+            bot_cmt_tile = next(
+                k for k, v in cmt_dict.items() if k.startswith("CLK_BUFG_BOT")
+            )
             _, thresh_bot_y = cmt_dict[bot_cmt_tile]["canon_loc"]
         except StopIteration:
             thresh_bot_y = None
 
         if graph_limit is None:
-            assert thresh_top_y is not None, "BUFG sites in the top half of the device not found"
-            assert thresh_bot_y is not None, "BUFG sites in the bottom half of the device not found"
+            assert thresh_top_y is not None, (
+                "BUFG sites in the top half of the device not found"
+            )
+            assert thresh_bot_y is not None, (
+                "BUFG sites in the bottom half of the device not found"
+            )
         else:
-            assert (
-                thresh_top_y is not None or thresh_bot_y is not None
-            ), "The device grid does not contain any BUFG sites"
+            assert thresh_top_y is not None or thresh_bot_y is not None, (
+                "The device grid does not contain any BUFG sites"
+            )
 
         for k, v in cmt_dict.items():
             clock_region = v["clock_region"]
@@ -540,8 +575,15 @@ class ClockPlacer(object):
                         continue
 
                     if cname in self.clock_cmts:
-                        assert_out = (cname, port, self.clock_cmts[cname], self.input_pins[port])
-                        assert self.clock_cmts[cname] == self.input_pins[port], assert_out
+                        assert_out = (
+                            cname,
+                            port,
+                            self.clock_cmts[cname],
+                            self.input_pins[port],
+                        )
+                        assert self.clock_cmts[cname] == self.input_pins[port], (
+                            assert_out
+                        )
                     else:
                         self.clock_cmts[cname] = self.input_pins[port]
 
@@ -570,7 +612,10 @@ class ClockPlacer(object):
 
                 clock["sink_nets"].append(sink_net)
 
-                if sink_net not in self.input_pins and sink_net not in self.clock_sources:
+                if (
+                    sink_net not in self.input_pins
+                    and sink_net not in self.clock_sources
+                ):
                     # Allow IBUFs. At this point we cannot distinguish between
                     # IBUFs for clock and logic.
                     if bel == "IBUF_VPR":
@@ -583,7 +628,9 @@ class ClockPlacer(object):
 
                     # The clock source comes from logic, disallow that
                     eprint(
-                        "The clock net '{}' driving '{}' sources at logic which is not allowed!".format(sink_net, bel)
+                        "The clock net '{}' driving '{}' sources at logic which is not allowed!".format(
+                            sink_net, bel
+                        )
                     )
                     exit(-1)
 
@@ -615,7 +662,10 @@ class ClockPlacer(object):
                     clock_region_pkey = site["clock_region"]
 
                     if block in self.clock_cmts:
-                        assert clock_region_pkey == self.clock_cmts[block], (block, clock_region_pkey)
+                        assert clock_region_pkey == self.clock_cmts[block], (
+                            block,
+                            clock_region_pkey,
+                        )
                     else:
                         self.clock_cmts[block] = clock_region_pkey
 
@@ -688,13 +738,17 @@ class ClockPlacer(object):
                 clock = self.clock_blocks[clock_name]
 
                 if CLOCKS[clock["subckt"]]["type"] == "PLLE2_ADV":
-                    problem.addConstraint(lambda cmt: cmt in self.pll_cmts, (clock_name,))
+                    problem.addConstraint(
+                        lambda cmt: cmt in self.pll_cmts, (clock_name,)
+                    )
                     exclusive_clocks["PLLE2_ADV"].add(clock_name)
                     if is_net_ibuf:
                         ibuf_cmt_sinks[source_clock_name].add(clock_name)
 
                 if CLOCKS[clock["subckt"]]["type"] == "MMCME2_ADV":
-                    problem.addConstraint(lambda cmt: cmt in self.mmcm_cmts, (clock_name,))
+                    problem.addConstraint(
+                        lambda cmt: cmt in self.mmcm_cmts, (clock_name,)
+                    )
                     exclusive_clocks["MMCME2_ADV"].add(clock_name)
                     if is_net_ibuf:
                         ibuf_cmt_sinks[source_clock_name].add(clock_name)
@@ -704,10 +758,14 @@ class ClockPlacer(object):
                         # BUFGCTRL do not get a CMT, instead they get either top or
                         # bottom.
                         problem.addConstraint(
-                            lambda clock: clock == self.cmt_to_bufg_tile[self.input_pins[net]], (clock_name,)
+                            lambda clock: clock
+                            == self.cmt_to_bufg_tile[self.input_pins[net]],
+                            (clock_name,),
                         )
                     elif CLOCKS[clock["subckt"]]["type"] != "IBUF":
-                        problem.addConstraint(lambda clock: clock == self.input_pins[net], (clock_name,))
+                        problem.addConstraint(
+                            lambda clock: clock == self.input_pins[net], (clock_name,)
+                        )
                 else:
                     source_clock_name = self.clock_sources_cname[net]
                     source_block = self.clock_blocks[source_clock_name]
@@ -719,11 +777,15 @@ class ClockPlacer(object):
                     if CLOCKS[clock["subckt"]]["type"] == "BUFGCTRL":
                         # BUFG's need to be in the right half.
                         problem.addConstraint(
-                            lambda source, sink_bufg: self.cmt_to_bufg_tile[source] == sink_bufg,
+                            lambda source, sink_bufg: self.cmt_to_bufg_tile[source]
+                            == sink_bufg,
                             (source_clock_name, clock_name),
                         )
                     elif not is_net_ibuf:
-                        problem.addConstraint(lambda source, sink: source == sink, (source_clock_name, clock_name))
+                        problem.addConstraint(
+                            lambda source, sink: source == sink,
+                            (source_clock_name, clock_name),
+                        )
 
         # Ensure that in case of an IBUF driving multiple CMTs at least one of
         # them is in the same clock region as the IBUF.
@@ -746,7 +808,9 @@ class ClockPlacer(object):
 
             self.clock_cmts.update(solutions[0])
 
-    def place_clocks(self, canon_grid, vpr_grid, loc_in_use, block_locs, blocks, grid_capacities):
+    def place_clocks(
+        self, canon_grid, vpr_grid, loc_in_use, block_locs, blocks, grid_capacities
+    ):
         self.assign_cmts(vpr_grid, blocks, block_locs)
 
         site_type_dict = vpr_grid.get_site_type_dict()
@@ -774,7 +838,9 @@ class ClockPlacer(object):
                     available_locs[key] = []
 
                 available_placements[key].append(loc)
-                vpr_loc = get_vpr_coords_from_site_name(canon_grid, vpr_grid, loc, grid_capacities)
+                vpr_loc = get_vpr_coords_from_site_name(
+                    canon_grid, vpr_grid, loc, grid_capacities
+                )
 
                 if vpr_loc is None:
                     continue
@@ -800,7 +866,11 @@ class ClockPlacer(object):
             if clock_name in blocks:
                 # This block has a LOC constraint from the user, verify that
                 # this LOC constraint makes sense.
-                assert blocks[clock_name] in available_locs[key], (clock_name, blocks[clock_name], available_locs[key])
+                assert blocks[clock_name] in available_locs[key], (
+                    clock_name,
+                    blocks[clock_name],
+                    available_locs[key],
+                )
                 continue
 
             loc = None
@@ -879,7 +949,9 @@ def get_vpr_coords_from_site_name(canon_grid, vpr_grid, site_name, grid_capaciti
         return (x, y, instance_idx)
 
 
-def constrain_special_ios(canon_grid, vpr_grid, io_blocks, blif_data, blocks, place_constraints):
+def constrain_special_ios(
+    canon_grid, vpr_grid, io_blocks, blif_data, blocks, place_constraints
+):
     """
     There are special IOs which need extra handling when dealing with placement constraints.
 
@@ -948,7 +1020,9 @@ def constrain_special_ios(canon_grid, vpr_grid, io_blocks, blif_data, blocks, pl
                 sites = sorted(gridinfo.sites.keys())
                 site_name = sites[z]
 
-                connected_io_site = vpr_grid.get_site_dict()[site_name]["connected_to_site"]
+                connected_io_site = vpr_grid.get_site_dict()[site_name][
+                    "connected_to_site"
+                ]
                 assert connected_io_site, (site_name, bel, cname)
 
                 new_z = sites.index(connected_io_site)
@@ -957,7 +1031,9 @@ def constrain_special_ios(canon_grid, vpr_grid, io_blocks, blif_data, blocks, pl
                 blocks_to_constrain.add((cname, loc))
 
     for block, vpr_loc in blocks_to_constrain:
-        place_constraints.constrain_block(block, vpr_loc, "Constraining block {}".format(block))
+        place_constraints.constrain_block(
+            block, vpr_loc, "Constraining block {}".format(block)
+        )
 
         blocks[block] = vpr_loc
 
@@ -1019,7 +1095,9 @@ def p_main(
     blocks = {}
     block_locs = {}
     for block, loc in place_constraints.get_loc_sites():
-        vpr_loc = get_vpr_coords_from_site_name(canon_grid, vpr_grid, loc, grid_capacities)
+        vpr_loc = get_vpr_coords_from_site_name(
+            canon_grid, vpr_grid, loc, grid_capacities
+        )
         loc_in_use.add(vpr_loc)
 
         if block in io_blocks:
@@ -1028,19 +1106,29 @@ def p_main(
         blocks[block] = vpr_loc
         block_locs[block] = loc
 
-        place_constraints.constrain_block(block, vpr_loc, "Constraining block {}".format(block))
+        place_constraints.constrain_block(
+            block, vpr_loc, "Constraining block {}".format(block)
+        )
 
     # Constrain blocks directly connected to IO in the same x, y location
-    constrain_special_ios(canon_grid, vpr_grid, io_blocks, eblif_data, blocks, place_constraints)
+    constrain_special_ios(
+        canon_grid, vpr_grid, io_blocks, eblif_data, blocks, place_constraints
+    )
 
     # Constrain clock resources
-    clock_placer = ClockPlacer(vpr_grid, io_blocks, eblif_data, roi, graph_limit, allow_bufg_logic_sources)
+    clock_placer = ClockPlacer(
+        vpr_grid, io_blocks, eblif_data, roi, graph_limit, allow_bufg_logic_sources
+    )
     if clock_placer.has_clock_nets():
         for block, loc in clock_placer.place_clocks(
             canon_grid, vpr_grid, loc_in_use, block_locs, blocks, grid_capacities
         ):
-            vpr_loc = get_vpr_coords_from_site_name(canon_grid, vpr_grid, loc, grid_capacities)
-            place_constraints.constrain_block(block, vpr_loc, "Constraining clock block {}".format(block))
+            vpr_loc = get_vpr_coords_from_site_name(
+                canon_grid, vpr_grid, loc, grid_capacities
+            )
+            place_constraints.constrain_block(
+                block, vpr_loc, "Constraining clock block {}".format(block)
+            )
     """ Constrain IDELAYCTRL sites
 
     Prior to the invocation of this script, the IDELAYCTRL sites must have been
@@ -1067,9 +1155,9 @@ def p_main(
 
     idelayctrl_instances = place_constraints.get_used_instances("IDELAYCTRL")
 
-    assert len(idelayctrl_cmts) <= len(
-        idelayctrl_instances
-    ), "The number of IDELAYCTRL blocks and IO banks with IDELAYs used do not match."
+    assert len(idelayctrl_cmts) <= len(idelayctrl_instances), (
+        "The number of IDELAYCTRL blocks and IO banks with IDELAYs used do not match."
+    )
 
     idelayctrl_sites = dict()
     for site_name, _, clk_region in vpr_grid.get_site_type_dict()["IDELAYCTRL"]:
@@ -1094,11 +1182,16 @@ def p_main(
         vpr_loc = (x, y, 0)
 
         place_constraints.constrain_block(
-            idelayctrl_block, vpr_loc, "Constraining idelayctrl block {}".format(idelayctrl_block)
+            idelayctrl_block,
+            vpr_loc,
+            "Constraining idelayctrl block {}".format(idelayctrl_block),
         )
 
     if len(idelayctrl_instances) > 0:
-        print("Warning: IDELAY_GROUPS parameters are currently being ignored!", file=sys.stderr)
+        print(
+            "Warning: IDELAY_GROUPS parameters are currently being ignored!",
+            file=sys.stderr,
+        )
 
     place_constraints.output_place_constraints(output)
 
@@ -1122,7 +1215,10 @@ def main(
         arch=arch,
         db_root=(
             environ.get(
-                "DATABASE_DIR", subprocess_run("prjxray-config", capture_output=True).stdout.decode("utf-8").strip()
+                "DATABASE_DIR",
+                subprocess_run("prjxray-config", capture_output=True)
+                .stdout.decode("utf-8")
+                .strip(),
             )
             if db_root is None
             else db_root
@@ -1138,9 +1234,16 @@ def main(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Convert a PCF file into a VPR io.place file.")
+    parser = argparse.ArgumentParser(
+        description="Convert a PCF file into a VPR io.place file."
+    )
     parser.add_argument(
-        "--input", "-i", "-I", type=argparse.FileType("r"), default=sys.stdout, help="The input constraints place file"
+        "--input",
+        "-i",
+        "-I",
+        type=argparse.FileType("r"),
+        default=sys.stdout,
+        help="The input constraints place file",
     )
     parser.add_argument(
         "--output",
@@ -1150,15 +1253,27 @@ if __name__ == "__main__":
         default=sys.stdout,
         help="The output constraints place file",
     )
-    parser.add_argument("--net", "-n", type=argparse.FileType("r"), required=True, help="top.net file")
-    parser.add_argument("--vpr_grid_map", help="Map of canonical to VPR grid locations", required=True)
+    parser.add_argument(
+        "--net", "-n", type=argparse.FileType("r"), required=True, help="top.net file"
+    )
+    parser.add_argument(
+        "--vpr_grid_map", help="Map of canonical to VPR grid locations", required=True
+    )
     parser.add_argument("--arch", help="Arch XML", required=True)
     parser.add_argument("--db_root", required=True)
     parser.add_argument("--part", required=True)
-    parser.add_argument("--blif", "-b", type=argparse.FileType("r"), required=True, help="BLIF / eBLIF file")
+    parser.add_argument(
+        "--blif",
+        "-b",
+        type=argparse.FileType("r"),
+        required=True,
+        help="BLIF / eBLIF file",
+    )
     parser.add_argument("--roi", action="store_true", help="Using ROI")
     parser.add_argument(
-        "--allow-bufg-logic-sources", action="store_true", help="When set allows BUFGs to be driven by logic"
+        "--allow-bufg-logic-sources",
+        action="store_true",
+        help="When set allows BUFGs to be driven by logic",
     )
     parser.add_argument("--graph_limit", help="Graph limit parameters")
     args = parser.parse_args()

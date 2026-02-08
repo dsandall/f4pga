@@ -73,7 +73,9 @@ class Stage:
         if stage_def is None:
             stage_def = {}
 
-        self.module = get_module(resolve_modstr(stage_def["module"]))(stage_def.get("params"))
+        self.module = get_module(resolve_modstr(stage_def["module"]))(
+            stage_def.get("params")
+        )
 
         values = stage_def.get("values")
         self.value_overrides = values if values is not None else {}

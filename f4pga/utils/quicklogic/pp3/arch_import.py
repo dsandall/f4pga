@@ -385,11 +385,23 @@ def write_direct_connections(xml_arch, tile_grid, connections):
 
 def main():
     # Parse arguments
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
     parser.add_argument("--vpr-db", type=str, required=True, help="VPR database file")
-    parser.add_argument("--arch-out", type=str, default="arch.xml", help="Output arch XML file (def. arch.xml)")
-    parser.add_argument("--device", type=str, default="quicklogic", help="Device name for the architecture")
+    parser.add_argument(
+        "--arch-out",
+        type=str,
+        default="arch.xml",
+        help="Output arch XML file (def. arch.xml)",
+    )
+    parser.add_argument(
+        "--device",
+        type=str,
+        default="quicklogic",
+        help="Device name for the architecture",
+    )
 
     args = parser.parse_args()
 
@@ -477,7 +489,9 @@ def main():
     write_direct_connections(xml_arch, vpr_tile_grid, connections)
 
     # Save the arch
-    ET.ElementTree(xml_arch).write(args.arch_out, pretty_print=True, xml_declaration=True, encoding="utf-8")
+    ET.ElementTree(xml_arch).write(
+        args.arch_out, pretty_print=True, xml_declaration=True, encoding="utf-8"
+    )
 
 
 # =============================================================================

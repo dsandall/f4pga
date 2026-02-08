@@ -22,29 +22,55 @@ from re import finditer as re_finditer
 
 
 def p_add_flow_arg(parser: ArgumentParser):
-    parser.add_argument("-f", "--flow", metavar="flow_path", type=str, help="Path to flow definition file")
+    parser.add_argument(
+        "-f",
+        "--flow",
+        metavar="flow_path",
+        type=str,
+        help="Path to flow definition file",
+    )
 
 
 def p_setup_build_parser(parser: ArgumentParser):
     p_add_flow_arg(parser)
 
     parser.add_argument(
-        "-t", "--target", metavar="target_name", type=str, help="Perform stages necessary to acquire target"
+        "-t",
+        "--target",
+        metavar="target_name",
+        type=str,
+        help="Perform stages necessary to acquire target",
     )
 
     parser.add_argument(
-        "-P", "--pretend", action="store_true", help="Show dependency resolution without executing flow"
+        "-P",
+        "--pretend",
+        action="store_true",
+        help="Show dependency resolution without executing flow",
     )
-
-    parser.add_argument("-i", "--info", action="store_true", help="Display info about available targets")
 
     parser.add_argument(
-        "-c", "--nocache", action="store_true", help="Ignore caching and rebuild everything up to the target."
+        "-i", "--info", action="store_true", help="Display info about available targets"
     )
 
-    parser.add_argument("-S", "--stageinfo", nargs=1, metavar="stage_name", help="Display info about stage")
+    parser.add_argument(
+        "-c",
+        "--nocache",
+        action="store_true",
+        help="Ignore caching and rebuild everything up to the target.",
+    )
 
-    parser.add_argument("-p", "--part", metavar="part_name", help="Name of the target chip")
+    parser.add_argument(
+        "-S",
+        "--stageinfo",
+        nargs=1,
+        metavar="stage_name",
+        help="Display info about stage",
+    )
+
+    parser.add_argument(
+        "-p", "--part", metavar="part_name", help="Name of the target chip"
+    )
 
     parser.add_argument("--dep", "-D", action="append", default=[])
 
@@ -53,7 +79,11 @@ def p_setup_build_parser(parser: ArgumentParser):
 
 def p_setup_show_dep_parser(parser: ArgumentParser):
     parser.add_argument(
-        "-p", "--part", metavar="part_name", type=str, help="Name of the part (use to display part-specific values.)"
+        "-p",
+        "--part",
+        metavar="part_name",
+        type=str,
+        help="Name of the part (use to display part-specific values.)",
     )
 
     parser.add_argument(
@@ -79,7 +109,9 @@ def setup_argparser():
 
     subparsers = parser.add_subparsers(dest="command")
     p_setup_build_parser(subparsers.add_parser("build"))
-    show_dep = subparsers.add_parser("showd", description="Show the value(s) assigned to a dependency")
+    show_dep = subparsers.add_parser(
+        "showd", description="Show the value(s) assigned to a dependency"
+    )
     p_setup_show_dep_parser(show_dep)
 
     return parser
@@ -256,7 +288,9 @@ def get_cli_flow_config(args: Namespace, part: str):
             else:
                 if part_flow_config.get(stage) is None:
                     part_flow_config[stage] = create_defdict()
-                part_flow_config[stage][dict_name][value_def["name"]] = value_def["value"]
+                part_flow_config[stage][dict_name][value_def["name"]] = value_def[
+                    "value"
+                ]
 
     add_entries(args.dep, "dependencies")
     add_entries(args.val, "values")

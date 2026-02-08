@@ -63,7 +63,7 @@ git = which("git")
 if git is not None:
     proc = run(["git", "rev-parse", "HEAD"], capture_output=True)
     if proc.returncode == 0:
-        version = f'{semver}+{proc.stdout.decode("utf8")[0:8]}'
+        version = f"{semver}+{proc.stdout.decode('utf8')[0:8]}"
 
 if version is None:
     version = semver

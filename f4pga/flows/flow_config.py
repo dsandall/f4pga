@@ -130,7 +130,9 @@ class ProjectFlowConfig:
         return platform_ovds
 
 
-def override_prj_flow_cfg_by_cli(cfg: ProjectFlowConfig, cli_d: "dict[str, dict[str, dict]]"):
+def override_prj_flow_cfg_by_cli(
+    cfg: ProjectFlowConfig, cli_d: "dict[str, dict[str, dict]]"
+):
     for part_name, part_cfg in cli_d.items():
         print(f"OVERRIDING CONFIG FOR {part_name}")
         p_cfg = cfg.flow_cfg.get(part_name)
@@ -184,18 +186,22 @@ class FlowConfig:
     dependencies_explicit: "dict[str, ]"
     stages: "dict[str, Stage]"
 
-    def __init__(self, project_config: ProjectFlowConfig, platform_def: FlowDefinition, part: str):
+    def __init__(
+        self, project_config: ProjectFlowConfig, platform_def: FlowDefinition, part: str
+    ):
         self.r_env = platform_def.r_env
         self.r_env.add_values(project_config.get_values_raw(part))
         self.stages = platform_def.stages
         self.part = part
 
-        self.dependencies_explicit = deep(lambda p: str(Path(p).resolve()), allow_none=True)(
-            self.r_env.resolve(project_config.get_dependencies_raw(part))
-        )
+        self.dependencies_explicit = deep(
+            lambda p: str(Path(p).resolve()), allow_none=True
+        )(self.r_env.resolve(project_config.get_dependencies_raw(part)))
 
         for stage_name, stage in platform_def.stages.items():
-            project_val_ovds = project_config.get_stage_value_overrides(part, stage_name)
+            project_val_ovds = project_config.get_stage_value_overrides(
+                part, stage_name
+            )
             stage.value_overrides.update(project_val_ovds)
 
     def get_dependency_overrides(self):

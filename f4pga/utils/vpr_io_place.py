@@ -210,7 +210,9 @@ class IoPlace(object):
 
     def output_io_place(self, f):
         max_name_length = max(len(c.name) for c in self.constraints.values())
-        print(HEADER_TEMPLATE.format(name="Block Name", nl=max_name_length, s=""), file=f)
+        print(
+            HEADER_TEMPLATE.format(name="Block Name", nl=max_name_length, s=""), file=f
+        )
 
         constrained_blocks = {}
 
@@ -223,8 +225,16 @@ class IoPlace(object):
             if name in constrained_blocks:
                 existing = constrained_blocks[name]
 
-                if existing.x != constraint.x or existing.y != constraint.y or existing.z != constraint.z:
-                    print("Error: block '{}' has multiple conflicting constraints!".format(name))
+                if (
+                    existing.x != constraint.x
+                    or existing.y != constraint.y
+                    or existing.z != constraint.z
+                ):
+                    print(
+                        "Error: block '{}' has multiple conflicting constraints!".format(
+                            name
+                        )
+                    )
                     print("", constrained_blocks[name])
                     print("", constraint)
                     exit(-1)

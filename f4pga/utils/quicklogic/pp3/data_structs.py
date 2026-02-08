@@ -20,6 +20,7 @@
 This file contains definitions of various data structutes used to hold tilegrid
 and routing information of a Quicklogic FPGA.
 """
+
 from collections import namedtuple
 from enum import Enum
 
@@ -117,11 +118,15 @@ class TileType(object):
                 for pin in cells_library[cell_type].pins:
                     name = "{}{}_{}".format(cell_type, i, pin.name)
 
-                    self.pins.append(Pin(name=name, direction=pin.direction, attrib=pin.attrib))
+                    self.pins.append(
+                        Pin(name=name, direction=pin.direction, attrib=pin.attrib)
+                    )
 
         # Add the fake constant connection pin if marked
         if self.fake_const_pin:
-            self.pins.append(Pin(name="FAKE_CONST", direction=PinDirection.INPUT, attrib={}))
+            self.pins.append(
+                Pin(name="FAKE_CONST", direction=PinDirection.INPUT, attrib={})
+            )
 
 
 """
@@ -158,7 +163,9 @@ mux_id        - Mux id within the switch
 pin_id        - Pin id of the mux
 pin_direction - Logical direction of the pin
 """
-SwitchboxPinLoc = namedtuple("SwitchboxPinLoc", "stage_id switch_id mux_id pin_id pin_direction")
+SwitchboxPinLoc = namedtuple(
+    "SwitchboxPinLoc", "stage_id switch_id mux_id pin_id pin_direction"
+)
 """
 A top-level switchbox pin.
 

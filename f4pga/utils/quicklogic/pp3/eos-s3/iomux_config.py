@@ -21,6 +21,7 @@ This is an utility script that allows to generate EOS S3 IOMUX configuration
 either from data in JSON format or from the given EBLIF netlist plus PCF
 constraints of the FPGA design.
 """
+
 import argparse
 import csv
 import json
@@ -46,7 +47,15 @@ IOB_TYPES = {
 }
 
 # Default configuration of the IOMUX pad
-PAD_DEFAULT = {"func_sel": 0, "ctrl_sel": 0, "mode": "none", "pull": "none", "drive": 2, "slew": "slow", "schmitt": 0}
+PAD_DEFAULT = {
+    "func_sel": 0,
+    "ctrl_sel": 0,
+    "mode": "none",
+    "pull": "none",
+    "drive": 2,
+    "slew": "slow",
+    "schmitt": 0,
+}
 
 # Base address of the FBIO_SEL registers
 FBIOSEL_BASE = 0x40004D80
@@ -161,17 +170,38 @@ def main():
     """
 
     # Parse arguments
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-
-    parser.add_argument("--json", default=None, type=str, help="Read IOMUX configuration from the given JSON file")
-
-    parser.add_argument("--eblif", default=None, type=str, help="EBLIF netlist file of a design")
-
-    parser.add_argument("--pcf", default=None, type=str, help="PCF constraints file for a design")
-    parser.add_argument("--map", "-m", "-M", type=argparse.FileType("r"), required=True, help="Pin map CSV file")
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
     parser.add_argument(
-        "--output-format", default=None, type=str, help="Output format of IOMUX commands (openocd/jlink)"
+        "--json",
+        default=None,
+        type=str,
+        help="Read IOMUX configuration from the given JSON file",
+    )
+
+    parser.add_argument(
+        "--eblif", default=None, type=str, help="EBLIF netlist file of a design"
+    )
+
+    parser.add_argument(
+        "--pcf", default=None, type=str, help="PCF constraints file for a design"
+    )
+    parser.add_argument(
+        "--map",
+        "-m",
+        "-M",
+        type=argparse.FileType("r"),
+        required=True,
+        help="Pin map CSV file",
+    )
+
+    parser.add_argument(
+        "--output-format",
+        default=None,
+        type=str,
+        help="Output format of IOMUX commands (openocd/jlink)",
     )
 
     args = parser.parse_args()
@@ -228,7 +258,10 @@ def main():
                 print(
                     "PCF constraint '{}' from line {} constraints pad {} "
                     "which is not in available pad map:\n{}".format(
-                        constraint.line_str, constraint.line_num, pad_name, "\n".join(sorted(pad_map.keys()))
+                        constraint.line_str,
+                        constraint.line_num,
+                        pad_name,
+                        "\n".join(sorted(pad_map.keys())),
                     ),
                     file=sys.stderr,
                 )

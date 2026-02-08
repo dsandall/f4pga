@@ -555,7 +555,9 @@ def fixup_congested_rows(design, top_module, bit_to_cells, bit_to_nets, chain):
             co_bit = co_conns[0]
 
             is_o_used = is_bit_used(bit_to_cells, o_bit)
-            is_co_used, direct_cellname = is_bit_used_other_than_carry4_cin(design, top_module, co_bit, bit_to_cells)
+            is_co_used, direct_cellname = is_bit_used_other_than_carry4_cin(
+                design, top_module, co_bit, bit_to_cells
+            )
 
             if is_o_used and is_co_used:
                 # Output at this row is congested.
@@ -568,7 +570,9 @@ def fixup_congested_rows(design, top_module, bit_to_cells, bit_to_nets, chain):
                     assert int(direct_cell["parameters"]["TOP_OF_CHAIN"]) == 1
                 # If this is the last CARRY4 in the chain, see if the
                 # remaining part of the chain is idle.
-                elif chain_idx == len(chain) - 1 and check_if_rest_of_carry4_is_unused(cellname, cell_idx + 1):
+                elif chain_idx == len(chain) - 1 and check_if_rest_of_carry4_is_unused(
+                    cellname, cell_idx + 1
+                ):
                     # Because the rest of the CARRY4 is idle, it is safe to
                     # use the next row up to output the top of the carry.
                     connections["S{}".format(cell_idx + 1)] = ["1'b0"]

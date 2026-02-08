@@ -16,7 +16,8 @@
 # limitations under the License.
 #
 # SPDX-License-Identifier: Apache-2.0
-""" Convert a PCF file into a VPR io.place file. """
+"""Convert a PCF file into a VPR io.place file."""
+
 import argparse
 import csv
 import sys
@@ -47,14 +48,43 @@ BLOCK_INSTANCE_RE = re.compile(r"^(?P<name>\S+)\[(?P<index>[0-9]+)\]$")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert a PCF file into a VPR io.place file.")
-    parser.add_argument("--pcf", "-p", "-P", type=argparse.FileType("r"), required=True, help="PCF input file")
-    parser.add_argument("--blif", "-b", type=argparse.FileType("r"), required=True, help="BLIF / eBLIF file")
-    parser.add_argument("--map", "-m", "-M", type=argparse.FileType("r"), required=True, help="Pin map CSV file")
-    parser.add_argument(
-        "--output", "-o", "-O", type=argparse.FileType("w"), default=sys.stdout, help="The output io.place file"
+    parser = argparse.ArgumentParser(
+        description="Convert a PCF file into a VPR io.place file."
     )
-    parser.add_argument("--net", "-n", type=argparse.FileType("r"), required=True, help="top.net file")
+    parser.add_argument(
+        "--pcf",
+        "-p",
+        "-P",
+        type=argparse.FileType("r"),
+        required=True,
+        help="PCF input file",
+    )
+    parser.add_argument(
+        "--blif",
+        "-b",
+        type=argparse.FileType("r"),
+        required=True,
+        help="BLIF / eBLIF file",
+    )
+    parser.add_argument(
+        "--map",
+        "-m",
+        "-M",
+        type=argparse.FileType("r"),
+        required=True,
+        help="Pin map CSV file",
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        "-O",
+        type=argparse.FileType("w"),
+        default=sys.stdout,
+        help="The output io.place file",
+    )
+    parser.add_argument(
+        "--net", "-n", type=argparse.FileType("r"), required=True, help="top.net file"
+    )
 
     args = parser.parse_args()
 
@@ -96,7 +126,10 @@ def main():
             print(
                 'PCF constraint "{}" from line {} constraints net {} \
                         which is not in available netlist:\n{}'.format(
-                    pcf_constraint.line_str, pcf_constraint.line_num, pcf_constraint.net, "\n".join(io_place.get_nets())
+                    pcf_constraint.line_str,
+                    pcf_constraint.line_num,
+                    pcf_constraint.net,
+                    "\n".join(io_place.get_nets()),
                 ),
                 file=sys.stderr,
             )
@@ -106,7 +139,10 @@ def main():
             print(
                 'PCF constraint "{}" from line {} constraints pad {} \
                         which is not in available pad map:\n{}'.format(
-                    pcf_constraint.line_str, pcf_constraint.line_num, pad_name, "\n".join(sorted(pad_map.keys()))
+                    pcf_constraint.line_str,
+                    pcf_constraint.line_num,
+                    pad_name,
+                    "\n".join(sorted(pad_map.keys())),
                 ),
                 file=sys.stderr,
             )
@@ -156,7 +192,9 @@ def main():
 
         # Constraint the net (block)
         loc = locs[inst]
-        io_place.constrain_net(net_name=pcf_constraint.net, loc=loc, comment=pcf_constraint.line_str)
+        io_place.constrain_net(
+            net_name=pcf_constraint.net, loc=loc, comment=pcf_constraint.line_str
+        )
 
     io_place.output_io_place(args.output)
 

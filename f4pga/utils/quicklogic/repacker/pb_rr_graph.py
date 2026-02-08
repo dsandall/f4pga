@@ -107,7 +107,9 @@ class Graph:
         """
         Adds a new node. Automatically assings its id
         """
-        node = Node(id=self.next_node_id, type=type, port_type=port_type, path=path, net=net)
+        node = Node(
+            id=self.next_node_id, type=type, port_type=port_type, path=path, net=net
+        )
 
         self.nodes[node.id] = node
         self.next_node_id += 1
@@ -178,7 +180,11 @@ class Graph:
                 parent_port = parent_node.path.rsplit(".", maxsplit=1)[-1]
 
                 # Add node
-                node = graph.add_node(parent_node.type, parent_node.port_type, ".".join([curr_path, parent_port]))
+                node = graph.add_node(
+                    parent_node.type,
+                    parent_node.port_type,
+                    ".".join([curr_path, parent_port]),
+                )
 
                 # Add edge
                 ic = "direct:{}".format(xml_pbtype.attrib["name"])
@@ -218,7 +224,9 @@ class Graph:
                 # Enumerate childern, build their paths
                 children = []
                 for xml_child, index in yield_pb_children(xml_mode):
-                    child_path = ".".join([curr_path, "{}[{}]".format(xml_child.attrib["name"], index)])
+                    child_path = ".".join(
+                        [curr_path, "{}[{}]".format(xml_child.attrib["name"], index)]
+                    )
 
                     children.append(
                         (
@@ -364,14 +372,23 @@ class Graph:
                 inps = list(yield_pins(xml_ic, xml_conn.attrib["input"], False))
                 outs = list(yield_pins(xml_ic, xml_conn.attrib["output"], False))
 
-                assert len(inps) == len(outs), (xml_conn.tag, xml_conn.attrib, len(inps), len(outs))
+                assert len(inps) == len(outs), (
+                    xml_conn.tag,
+                    xml_conn.attrib,
+                    len(inps),
+                    len(outs),
+                )
 
                 # Add edges
                 for inp, out in zip(inps, outs):
                     inp = get_node_path(inp)
                     out = get_node_path(out)
 
-                    self.add_edge(src_id=node_map[inp].id, dst_id=node_map[out].id, ic=xml_conn.attrib["name"])
+                    self.add_edge(
+                        src_id=node_map[inp].id,
+                        dst_id=node_map[out].id,
+                        ic=xml_conn.attrib["name"],
+                    )
 
             # Mux
             elif xml_conn.tag == "mux":
@@ -391,7 +408,11 @@ class Graph:
                     inp = get_node_path(inp_pins[0])
                     out = get_node_path(out_pins[0])
 
-                    self.add_edge(src_id=node_map[inp].id, dst_id=node_map[out].id, ic=xml_conn.attrib["name"])
+                    self.add_edge(
+                        src_id=node_map[inp].id,
+                        dst_id=node_map[out].id,
+                        ic=xml_conn.attrib["name"],
+                    )
 
             # Complete
             elif xml_conn.tag == "complete":
@@ -412,7 +433,11 @@ class Graph:
                     inp = get_node_path(inp_pin)
                     out = get_node_path(out_pin)
 
-                    self.add_edge(src_id=node_map[inp].id, dst_id=node_map[out].id, ic=xml_conn.attrib["name"])
+                    self.add_edge(
+                        src_id=node_map[inp].id,
+                        dst_id=node_map[out].id,
+                        ic=xml_conn.attrib["name"],
+                    )
 
     def dump_dot(self, color_by="type", nets_only=False, highlight_nodes=None):
         """
@@ -522,7 +547,15 @@ class Graph:
             if rank not in nodes:
                 nodes[rank] = []
 
-            nodes[rank].append({"id": node.id, "label": label, "xlabel": xlabel, "color": color, "shape": shape})
+            nodes[rank].append(
+                {
+                    "id": node.id,
+                    "label": label,
+                    "xlabel": xlabel,
+                    "color": color,
+                    "shape": shape,
+                }
+            )
 
         # Add nodes
         for rank, nodes in nodes.items():
@@ -550,7 +583,11 @@ class Graph:
             label = edge.ic
             color = edge_color(edge)
 
-            dot.append(' node_{} -> node_{} [label="{}",color="{}"];'.format(edge.src_id, edge.dst_id, label, color))
+            dot.append(
+                ' node_{} -> node_{} [label="{}",color="{}"];'.format(
+                    edge.src_id, edge.dst_id, label, color
+                )
+            )
 
         # Footer
         dot.append("}")
