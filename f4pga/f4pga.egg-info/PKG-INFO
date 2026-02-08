@@ -1,8 +1,0 @@
-Metadata-Version: 2.1
-Name: f4pga
-Version: 0.0.0+0723f9ca
-Summary: F4PGA.
-Home-page: https://github.com/chipsalliance/f4pga
-Author: F4PGA Authors
-License: Apache-2.0
-Requires-Python: >=3.6
