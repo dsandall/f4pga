@@ -72,11 +72,10 @@ class FasmModule(Module):
 
         if ctx.takes.fasm_extra:
             yield "Appending extra FASM..."
-            with (
-                open(ctx.outputs.fasm, "a") as fasm_file,
-                open(ctx.takes.fasm_extra, "r") as fasm_extra_file,
-            ):
+            # fmt: off
+            with open(ctx.outputs.fasm, "a") as fasm_file, open(ctx.takes.fasm_extra, "r") as fasm_extra_file:
                 fasm_file.write(f"\n{fasm_extra_file.read()}")
+            # fmt: on
         else:
             yield "No extra FASM to append"
 
