@@ -32,7 +32,7 @@ xc7a50t: &xc7
       router_high_fanout_threshold: -1
       constant_net_method: route
       route_chan_width: 500
-      router_heap: bucket
+      #router_heap: bucket
       clock_modeling: route
       place_delta_delay_matrix_calculation_method: dijkstra
       place_delay_model: delta
