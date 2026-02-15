@@ -244,6 +244,7 @@ def cmd_build(args: Namespace):
 
     flow_cfg = make_flow_config(project_flow_cfg, part_name)
 
+    print(flow_cfg)
     if args.info:
         display_dep_info(flow_cfg.stages.values())
         f4pga_done()

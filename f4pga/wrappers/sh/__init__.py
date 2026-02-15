@@ -88,6 +88,8 @@ def p_args_str2list(args):
 def p_vpr_run(args, env=environ):
     print("[F4PGA] Running (deprecated) vpr run")
 
+    print(env)
+
     arg_arch_def = env.get("ARCH_DEF")
     if arg_arch_def is None:
         raise (Exception("[F4PGA] vpr run: envvar ARCH_DEF cannot be unset/empty!"))

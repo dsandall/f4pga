@@ -25,7 +25,7 @@ from contextlib import contextmanager
 import importlib.util as importlib_util
 from pathlib import Path
 
-from colorama import Style
+from colorama import Style, Fore
 
 from f4pga.flows.module import Module, ModuleContext, get_mod_metadata
 from f4pga.flows.common import ResolutionEnv, deep, sfprint
@@ -132,19 +132,28 @@ def module_exec(module: Module, ctx: ModRunCtx):
     except Exception as e:
         raise ModuleFailException(module.name, "exec", e)
 
-    sfprint(1, f"Executing module `{Style.BRIGHT + module.name + Style.RESET_ALL}`:")
+    sfprint(
+        1,
+        f"Executing module `{Style.BRIGHT + Fore.GREEN + module.name + Fore.RESET + Style.RESET_ALL}`:",
+    )
     current_phase = 1
+
+    import time
+
+    elapsed = 0
+    start = time.perf_counter()
     try:
         for phase_msg in module.execute(mod_ctx):
             sfprint(
                 1,
-                f"    {Style.BRIGHT}[{current_phase}/{module.no_of_phases}] {Style.RESET_ALL}: {phase_msg}",
+                f"    (at {elapsed:.3f}s) {Style.BRIGHT}[{current_phase}/{module.no_of_phases}] {Style.RESET_ALL}: {phase_msg}",
             )
             current_phase += 1
     except Exception as e:
         raise ModuleFailException(module.name, "exec", e)
 
+    elapsed = time.perf_counter() - start
     sfprint(
         1,
-        f"Module `{Style.BRIGHT + module.name + Style.RESET_ALL}` has finished its work!",
+        f"Module `{Style.BRIGHT + module.name + Style.RESET_ALL}` has finished its work in {Fore.GREEN + str(f'{elapsed:.3f}') + Fore.RESET} seconds!",
     )

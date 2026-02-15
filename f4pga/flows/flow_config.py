@@ -21,6 +21,7 @@ from pathlib import Path
 from copy import copy
 from os import listdir as os_listdir
 from json import dump as json_dump, load as json_load
+from pprint import pformat
 
 from f4pga.flows.common import ResolutionEnv, deep
 from f4pga.flows.stage import Stage
@@ -185,6 +186,13 @@ class FlowConfig:
     r_env: ResolutionEnv
     dependencies_explicit: "dict[str, ]"
     stages: "dict[str, Stage]"
+
+    def __str__(self) -> str:
+        return (
+            f"part: {self.part}\n\n"
+            f"values: {pformat(self.r_env.values)}\n\n"
+            f"dependencies_explicit: {pformat(self.dependencies_explicit)}\n"
+        )
 
     def __init__(
         self, project_config: ProjectFlowConfig, platform_def: FlowDefinition, part: str

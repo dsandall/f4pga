@@ -101,26 +101,20 @@ class SubprocessException(Exception):
 
 def sub(*args, env=None, cwd=None, print_stdout_on_fail=False):
     """
-    Execute subroutine and record execution time.
+    Execute subroutine.
     """
 
-    print(f"RUNNING:\n$ {' '.join(args)}")
-
-    import time
-
-    start = time.perf_counter()
+    sfprint(1, f"Raw is: {' '.join(args)}")
     out = run(args, capture_output=True, env=env, cwd=cwd)
-    elapsed = time.perf_counter() - start
 
     if out.returncode != 0:
         print(f"[ERROR]: {args[0]} non-zero return code.")
-        print(f"[TIME]: {elapsed:.3f}s\n")
         if print_stdout_on_fail:
             print(f"stdout:\n{out.stdout.decode()}\n")
         print(f"stderr:\n{out.stderr.decode()}\n")
         exit(out.returncode)
 
-    print(f"[OK]: {args[0]} ({elapsed:.3f}s)")
+    print(f"[OK]: {args[0]})")
     return out.stdout
 
 
