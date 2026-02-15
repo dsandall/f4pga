@@ -105,6 +105,13 @@ def sub(*args, env=None, cwd=None, print_stdout_on_fail=False):
     """
 
     sfprint(1, f"Raw is: {' '.join(args)}")
+
+    # Sync PWD with cwd to avoid kj/capnp filesystem warnings
+    if cwd is not None:
+        if env is None:
+            env = environ.copy()
+        env["PWD"] = str(Path(cwd).resolve())
+
     out = run(args, capture_output=True, env=env, cwd=cwd)
 
     if out.returncode != 0:

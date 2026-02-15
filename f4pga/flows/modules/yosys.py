@@ -19,7 +19,7 @@
 
 from os import environ
 from pathlib import Path
-
+from pprint import pprint
 from f4pga.context import FPGA_FAM
 from f4pga.flows.common import decompose_depname, get_verbosity_level, sub as common_sub
 from f4pga.flows.module import Module, ModuleContext
@@ -60,17 +60,11 @@ class YosysModule(Module):
 
         # Set up environment for TCL weirdness
         env = environ.copy()
-        env.update(
-            (
-                {
-                    key: (" ".join(val) if type(val) is list else val)
-                    for key, val in ctx.values.yosys_tcl_env.items()
-                    if val is not None
-                }
-                if ctx.values.yosys_tcl_env
-                else {}
-            )
-        )
+        if ctx.values.yosys_tcl_env:
+            pprint(ctx.values.yosys_tcl_env)
+            for key, val in ctx.values.yosys_tcl_env.items():
+                if val is not None:
+                    env[key] = " ".join(val) if isinstance(val, list) else val
 
         # Execute YOSYS command
         args_str = (

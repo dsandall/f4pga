@@ -236,7 +236,7 @@ setundef -zero -params
 stat
 
 # TODO: remove this as soon as new VTR master+wip is pushed: https://github.com/SymbiFlow/vtr-verilog-to-routing/pull/525
-attrmap -remove hdlname
+#attrmap -remove hdlname
 
 # Write the design in JSON format.
 clean_processes
