@@ -64,6 +64,7 @@ class PackModule(Module):
         yield "Moving/deleting files..."
         if ctx.outputs.pack_log:
             og_log.rename(ctx.outputs.pack_log)
+
         else:
             og_log.unlink()
 

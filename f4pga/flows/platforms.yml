@@ -26,30 +26,13 @@ xc7a50t: &xc7
     rr_graph_real_bin: '${shareDir}/arch/xc7a50t_test/rr_graph_xc7a50t_test.rr_graph.real.bin'
     vpr_place_delay: '${shareDir}/arch/xc7a50t_test/rr_graph_xc7a50t_test.place_delay.bin'
     vpr_grid_layout_name: xc7a50t-test
+    # Default, shared across all VPR stages (pack, place, route, fasm)
     vpr_options: &xc7-vpr_options
-      base_cost_type: delay_normalized_length_bounded
-      max_router_iterations: 500
-      routing_failure_predictor: 'off'
-      router_high_fanout_threshold: -1
-      constant_net_method: route
-      route_chan_width: 500 #required by --read_rr_graph
-      #router_heap: bucket
+      route_chan_width: 500 # must match --read_rr_graph
       clock_modeling: route
-      place_delta_delay_matrix_calculation_method: dijkstra
-      place_delay_model: delta
-      router_lookahead: extended_map
-      check_route: quick
-      strict_checks: 'off'
-      allow_dangling_combinational_nodes: 'on'
-      disable_errors: 'check_unbuffered_edges:check_route'
-      congested_routing_iteration_threshold: '0.8'
-      incremental_reroute_delay_ripup: 'off'
-      bb_factor: 10
-      acc_fac: '0.7'
-      astar_fac: '1.8'
-      initial_pres_fac: '2.828'
-      pres_fac_mult: '1.2'
       check_rr_graph: 'off'
+      #strict_checks: 'off'
+      #allow_dangling_combinational_nodes: 'on'
       suppress_warnings: >-
         ${noisyWarnings},sum_pin_class:check_unbuffered_edges:load_rr_indexed_data_T_values:check_rr_node:trans_per_R:check_route:set_rr_graph_tool_comment:calculate_average_switch
 
@@ -86,6 +69,15 @@ xc7a50t: &xc7
           INPUT_XDC_FILES: '${:xdc}'
     pack:
       module: 'pack'
+      values:
+        vpr_options:
+          <<: *xc7-vpr_options
+          allow_unrelated_clustering: 'off'
+          timing_driven_clustering: 'off'
+          balance_block_type_utilization: 'off'
+          pack_verbosity: 1
+          pack_num_moves: 50000 # half the default
+
     ioplace:
       module: 'generic_script_wrapper'
       params:
@@ -123,8 +115,37 @@ xc7a50t: &xc7
           $PYTHONPATH: '${binDir}/python/'
     place:
       module: 'place'
+      values:
+        vpr_options:
+          <<: *xc7-vpr_options
+          # Place Options
+          place_delta_delay_matrix_calculation_method: dijkstra
+          place_delay_model: delta
+          # Route options that it needs for some reason
+          constant_net_method: route
+          router_lookahead: extended_map
+          disable_errors: 'check_unbuffered_edges:check_route'
     route:
       module: 'route'
+      values:
+        vpr_options:
+          <<: *xc7-vpr_options
+          base_cost_type: delay_normalized_length_bounded
+          max_router_iterations: 500
+          #routing_failure_predictor: 'off'
+          routing_failure_predictor: 'aggressive'
+          router_high_fanout_threshold: -1
+          constant_net_method: route
+          router_lookahead: extended_map
+          check_route: 'off' # was quick
+          disable_errors: 'check_unbuffered_edges:check_route'
+          congested_routing_iteration_threshold: '0.8'
+          incremental_reroute_delay_ripup: 'off'
+          bb_factor: 10
+          acc_fac: '0.7'
+          astar_fac: '1.8'
+          initial_pres_fac: '2.828'
+          pres_fac_mult: '1.2'
     fasm:
       module: 'fasm'
       values:
@@ -132,6 +153,7 @@ xc7a50t: &xc7
           <<: *xc7-vpr_options
           timing_analysis: 'off'
           base_cost_type: demand_only_normalized_length
+          disable_errors: 'check_unbuffered_edges:check_route'
     bitstream:
       module: 'generic_script_wrapper'
       params:
