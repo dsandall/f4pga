@@ -127,6 +127,11 @@ xc7a50t: &xc7
       module: 'route'
     fasm:
       module: 'fasm'
+      values:
+        vpr_options:
+          <<: *xc7-vpr_options
+          timing_analysis: 'off'
+          base_cost_type: demand_only_normalized_length
     bitstream:
       module: 'generic_script_wrapper'
       params:
