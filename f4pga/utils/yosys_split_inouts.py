@@ -162,6 +162,14 @@ def main(input: str, output: str = None):
     # Get all inout ports
     inouts = {k: v for k, v in module["ports"].items() if v["direction"] == "inout"}
 
+    # Redundant guard: shortshift's xc7.f4pga.tcl already skips this script
+    # when no inout ports exist. Kept as defense-in-depth.
+    if not inouts:
+        print("No top-level inout ports found; nothing to split.")
+        with Path(output).open("w") as fp:
+            json.dump(design, fp, sort_keys=True, indent=2)
+        return
+
     # Split ports
     new_ports = {}
     net_map = {}

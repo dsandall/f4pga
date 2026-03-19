@@ -598,8 +598,19 @@ def fixup_congested_rows(design, top_module, bit_to_cells, bit_to_nets, chain):
                     fixup_cin(design, top_module, bit_to_cells, co_bit, direct_cellname)
 
 
+def has_carry4_cells(design, top_module):
+    """Return True when the design contains mapped XC7 carry cells."""
+    cells = design["modules"][top_module]["cells"]
+    return any(cell["type"] == "CARRY4_VPR" for cell in cells.values())
+
+
 def main(design):
     top_module = find_top_module(design)
+    # Redundant guard: shortshift's xc7.f4pga.tcl already skips this script
+    # when no CARRY4_VPR cells exist. Kept as defense-in-depth.
+    if not has_carry4_cells(design, top_module):
+        return design
+
     bit_to_cells = create_bit_to_cell_map(design, top_module)
     bit_to_nets = create_bit_to_net_map(design, top_module)
     for chain in find_carry4_chains(design, top_module, bit_to_cells):
